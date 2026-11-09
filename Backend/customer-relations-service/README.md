@@ -40,6 +40,9 @@ Microservice responsable des avis clients, des notes, des réclamations et du su
 ## Données
 Base proposée : **MongoDB**. 
 
+## Technologies proposées
+NodeJS
+
 ## Configuration et lancement
 À compléter selon la configuration Spring Boot, le port et les variables d'environnement du service.
 
