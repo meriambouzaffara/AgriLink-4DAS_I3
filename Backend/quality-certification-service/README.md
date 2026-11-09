@@ -36,6 +36,10 @@ Microservice responsable des contrôles qualité, des résultats de conformité 
 ## Données
 Base proposée : **H2**.
 
+## Technologies proposées
+- Spring Boot.
+
+
 ## Configuration et lancement
 À compléter selon la configuration Spring Boot, le port et les variables d'environnement du service.
 
