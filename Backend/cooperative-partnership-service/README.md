@@ -39,6 +39,9 @@ Microservice responsable de la gestion des coopératives agricoles, des adhésio
 ## Données
 Base proposée : **MySQL**. 
 
+## Technologies proposées
+- Spring Boot.
+
 ## Configuration et lancement
 À compléter selon la configuration Spring Boot, le port et les variables d'environnement du service.
 
