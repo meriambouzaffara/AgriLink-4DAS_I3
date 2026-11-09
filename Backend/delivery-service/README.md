@@ -38,6 +38,10 @@ Microservice responsable de l'organisation, de l'affectation et du suivi des liv
 ## Données
 Base proposée : **MYSQL**. 
 
+## Technologies proposées
+- Spring Boot.
+
+
 ## Configuration et lancement
 À compléter selon la configuration Spring Boot, le port et les variables d'environnement du service.
 
