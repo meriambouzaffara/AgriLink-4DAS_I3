@@ -42,6 +42,10 @@ MS1 fournit l'identité du client. Les références partagées (`userId`, `produ
 ## Données
 Base proposée : **MySQL**. 
 
+## Technologies proposées
+- Spring Boot.
+
+
 ## Configuration et lancement
 À compléter selon la configuration Spring Boot, le port et les variables d'environnement du service.
 
