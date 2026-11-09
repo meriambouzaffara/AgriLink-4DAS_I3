@@ -36,6 +36,10 @@ Microservice responsable de l'inscription, de l'authentification et de la gestio
 ## Données
 Base proposée pour le projet : **H2**. 
 
+## Technologies proposées
+- Spring Boot.
+
+
 ## Configuration et lancement
 À compléter par l'équipe selon la version Spring Boot, le port, le nom de la base et les variables d'environnement retenus.
 
