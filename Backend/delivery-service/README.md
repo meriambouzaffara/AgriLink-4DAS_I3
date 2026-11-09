@@ -36,7 +36,7 @@ Microservice responsable de l'organisation, de l'affectation et du suivi des liv
 - MS1 fournit les références et les informations de profil nécessaires pour identifier les transporteurs.
 
 ## Données
-Base proposée : **H2**. 
+Base proposée : **MYSQL**. 
 
 ## Configuration et lancement
 À compléter selon la configuration Spring Boot, le port et les variables d'environnement du service.
