@@ -6,9 +6,9 @@ import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 
 @SpringBootApplication
 @EnableDiscoveryClient
-public class CooperativePartnershipServiceApplication {
+public class CooperativeManagementServiceApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(CooperativePartnershipServiceApplication.class, args);
+        SpringApplication.run(CooperativeManagementServiceApplication.class, args);
     }
 }
