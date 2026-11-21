@@ -48,6 +48,7 @@ public class ControleQualite {
     @Column(nullable = false)
     private StatutControle statut = StatutControle.EN_COURS;
 
+
     @Column(nullable = false)
     private UUID recolteId;
 
@@ -56,5 +57,7 @@ public class ControleQualite {
 
     @ManyToMany(mappedBy = "controles", fetch = FetchType.LAZY)
     private List<Rapport> rapports = new ArrayList<>();
+
+
 }
 

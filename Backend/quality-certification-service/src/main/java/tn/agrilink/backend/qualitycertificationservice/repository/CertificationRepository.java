@@ -21,4 +21,9 @@ public interface CertificationRepository
     List<Certification> findByNomCertificationContainingIgnoreCase(
             String nomCertification
     );
+
+    boolean existsByNumeroCertificationAndIdCertificationNot(
+            String numeroCertification,
+            Long idCertification
+    );
 }
