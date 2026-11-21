@@ -1,0 +1,472 @@
+MS6 — Quality & Certification Service (AgriLink)
+Fiche de révision et d'exploitation du microservice MS6
+Package racine : tn.agrilink.backend.qualitycertificationservice
+Technologie : Java 21, Spring Boot 4.1.2, Maven, Spring Web MVC, Spring Data JPA, H2, MapStruct, OpenPDF, Springdoc OpenAPI.
+
+1. Objectif de MS6
+MS6 gère la qualité agricole, le suivi des certifications et la génération de rapports PDF.
+
+Il comporte trois domaines fonctionnels :
+1. Contrôles qualité : enregistrer les contrôles effectués sur une récolte, suivre leur avancement, leur décision et leur historique.
+2. Certifications agricoles : créer, consulter, modifier, rechercher, valider, suivre l'expiration et archiver les certifications.
+3. Rapports : générer des PDF à partir de contrôles ou de certifications, enregistrer les métadonnées du rapport et permettre son téléchargement.
+MS6 est un microservice backend : il expose des API REST. Il ne constitue pas, à lui seul, l'interface graphique de l'application.
+Relation avec les autres microservices
+- recolteId est un identifiant UUID qui référence une récolte gérée à l'extérieur de MS6.
+- idResponsable est un identifiant Long qui référence un responsable géré à l'extérieur de MS6 (notamment par MS1 selon l'architecture du projet).
+- MS6 stocke ces identifiants comme des valeurs simples. Il ne crée pas de table ResponsableQualiteCertification et ne possède pas les récoltes.
+- À ne pas supposer : la présence d'un identifiant dans MS6 ne prouve pas que la récolte ou le responsable existe dans son microservice d'origine. Une vérification interservices doit être ajoutée si le cahier des charges l'exige.
+2. Architecture et organisation du code
+Les interfaces et les classes d'implémentation des services sont toutes deux placées dans le package services.
+src/main/java/tn/agrilink/backend/qualitycertificationservice/
+|
++-- QualityCertificationServiceApplication.java
++-- controllers/       # Endpoints HTTP REST
++-- dto/               # Objets échangés avec l'API
++-- entity/            # Entités JPA persistées en base
++-- enums/             # États et types métier
++-- exception/         # Exceptions métier et gestion centralisée
++-- mapper/             # Interfaces MapStruct DTO <-> entité
++-- repository/         # Accès aux données avec Spring Data JPA
++-- services/           # Interfaces et implémentations métier
++-- configuration/      # Configuration du stockage des fichiers, etc.
+|
++-- src/main/resources/
+    +-- application.properties
+Rôle des couches
+Couche	Responsabilité	Ce qu'elle ne doit pas faire
+controllers	Recevoir les requêtes HTTP, lire les paramètres/DTO et appeler un service.	Ne pas contenir les règles métier ni effectuer directement les requêtes JPA.
+services	Appliquer les règles métier, vérifier les données et coordonner les repositories/mappers.	Ne pas construire les réponses HTTP ni contenir la logique de présentation.
+repository	Lire et enregistrer les entités en base avec Spring Data JPA.	Ne pas gérer les réponses HTTP.
+entity	Représenter les données persistées et leurs relations JPA.	Ne pas remplacer les DTO de l'API.
+dto	Définir les données reçues ou retournées par les endpoints.	Ne pas effectuer les opérations en base.
+mapper	Convertir DTO et entités avec MapStruct.	Ne pas contenir les règles métier.
+exception	Définir les erreurs métier et produire des réponses d'erreur uniformes.	Ne pas contenir les traitements métier normaux.
+
+
+Flux d'une requête
+Client / Swagger / Angular
+          |
+          v
+      Controller
+          |
+          v
+        Service --------> Repository --------> Base H2
+          |                                      |
+          v                                      |
+        Mapper <---------------------------------+
+          |
+          v
+       DTO / réponse HTTP
+
+En cas d'exception : Service -> GlobalExceptionHandler -> réponse HTTP JSON
+3. Modèle métier
+3.1 Contrôle qualité
+Entité : ControleQualite
+DTO : ControleQualiteDTO
+Identifiant : Long idControle
+
+Champs principaux :
+Champ	Type	Rôle
+idControle	Long	Identifiant généré par la base.
+dateControle	LocalDateTime	Date et heure du contrôle.
+typeControle	TypeControle	Étape ou nature du contrôle.
+decision	DecisionQualite	Résultat de qualité; peut être absent tant que le contrôle est en cours.
+observations	String	Commentaires du responsable.
+statut	StatutControle	État d'avancement du contrôle.
+recolteId	UUID	Référence externe vers une récolte.
+idResponsable	Long	Référence externe vers un responsable.
+
+
+Enums :
+public enum TypeControle {
+    RECEPTION,
+    STOCKAGE,
+    AVANT_COMMERCIALISATION,
+    EXPEDITION
+}
+
+public enum DecisionQualite {
+    CONFORME,
+    NON_CONFORME
+}
+
+public enum StatutControle {
+    EN_COURS,
+    TERMINE,
+    ANNULE
+}
+Cycle de vie retenu
+             +--------------------+
+             |      EN_COURS      |
+             +--------------------+
+                |              |
+       terminer |              | annuler
+                v              v
+        +-------------+  +-------------+
+        |   TERMINE   |  |   ANNULE    |
+        +-------------+  +-------------+
+          état final       état final
+Règles métier retenues dans la version testée :
+- Un contrôle nouvellement créé commence en EN_COURS.
+- La décision peut rester null pendant le contrôle.
+- Pour passer à TERMINE, une décision (CONFORME ou NON_CONFORME) est obligatoire.
+- Le passage normal de statut autorisé est EN_COURS vers TERMINE.
+- L'annulation se fait avec l'endpoint dédié et uniquement depuis EN_COURS.
+- TERMINE et ANNULE sont des états finaux : pas de retour à EN_COURS et pas de modification avec PUT.
+- Un contrôle annulé n'est pas supprimé : il reste consultable et présent dans l'historique de la récolte.
+- L'historique est trié par date de contrôle, du plus récent au plus ancien, dans la version du service proposée/testée.
+La règle qui interdit d'annuler un contrôle déjà terminé et la règle qui interdit de modifier un contrôle terminé sont des choix métier retenus pour MS6. À confirmer avec le cahier des charges si celui-ci prévoit une exception ou une procédure de correction.
+
+3.2 Certifications agricoles
+Entité : Certification
+DTO : CertificationDTO
+Identifiant : Long idCertification
+
+Champs principaux :
+Champ	Type	Rôle
+idCertification	Long	Identifiant généré par la base.
+nomCertification	String	Nom de la certification.
+numeroCertification	String	Numéro de certification, contrôlé comme unique.
+dateDelivrance	LocalDate	Date de délivrance.
+dateExpiration	LocalDate	Date d'expiration.
+statut	StatutCertification	État de la certification.
+documentCertificat	String	Référence/nom du document certificat.
+recolteId	UUID	Référence externe vers une récolte.
+idResponsable	Long	Référence externe vers un responsable.
+
+
+Enum :
+public enum StatutCertification {
+    VALIDEE,
+    EXPIREE,
+    ARCHIVEE
+}
+Règles métier retenues :
+- Le numéro de certification doit être unique.
+- La date d'expiration doit être postérieure ou égale à la date de délivrance.
+- Une certification archivée ne peut plus être modifiée ni réactivée.
+- L'archivage change le statut en ARCHIVEE; il ne supprime pas l'enregistrement.
+- Une certification dont la date d'expiration est dans le futur ne peut pas être passée manuellement à EXPIREE.
+- Une certification dont la date d'expiration est déjà dépassée ne peut pas être repassée manuellement à VALIDEE.
+- Lors de la modification (PUT), la version actuelle du service recalcule le statut : EXPIREE si dateExpiration est avant LocalDate.now(), sinon VALIDEE.
+Limite actuelle importante : il n'y a pas encore de tâche planifiée démontrée qui change automatiquement tous les jours les certifications arrivées à expiration. Le recalcul décrit ci-dessus se produit notamment lors d'une modification. Pour une expiration réellement automatique même sans appel API, il faudra ajouter un traitement planifié (@Scheduled) ou une autre stratégie prévue par le projet.
+
+À revoir dans add() avant livraison : la méthode vérifie les dates et le doublon du numéro et donne VALIDEE si le statut est absent. Il reste à vérifier qu'elle contrôle tous les champs obligatoires et qu'elle ne permet pas d'enregistrer une certification déjà expirée avec un statut incohérent.
+3.3 Rapports
+Entité : Rapport
+DTO : RapportDTO
+
+Champs principaux :
+- idRapport : identifiant du rapport.
+- typeRapport : CONTROLE_QUALITE ou CERTIFICATION.
+- dateGeneration : date et heure de génération.
+- urlRapport : chemin du fichier PDF sur le disque.
+- idResponsable : identifiant du responsable ayant demandé le rapport.
+Types :
+public enum TypeRapport {
+    CONTROLE_QUALITE,
+    CERTIFICATION
+}
+Un rapport est associé à plusieurs contrôles ou à plusieurs certifications avec les relations ManyToMany et les tables de jointure rapport_controles et rapport_certifications.
+
+Fonctionnement de génération :
+1. Le client envoie idResponsable et une liste d'identifiants ids.
+2. Le service récupère les contrôles ou certifications correspondants.
+3. Le générateur PDF construit le document.
+4. Le fichier est écrit dans le dossier de stockage.
+5. L'entité Rapport est sauvegardée avec son chemin et ses associations.
+6. Le téléchargement utilise le chemin stocké dans urlRapport.
+Le fait que le rapport soit dans H2 ne signifie pas que le contenu PDF est stocké dans H2 : H2 contient les métadonnées et les relations; le fichier PDF est stocké sur le disque.
+4. Endpoints REST de MS6
+URL locale utilisée pendant les tests : http://localhost:8086
+4.1 Contrôles qualité
+Base : /api/qualite-agricole/controles
+Méthode	Endpoint	Fonction
+POST	/api/qualite-agricole/controles	Créer un contrôle en EN_COURS.
+GET	/api/qualite-agricole/controles	Lister les contrôles.
+GET	/api/qualite-agricole/controles/{id}	Consulter un contrôle.
+PUT	/api/qualite-agricole/controles/{id}	Modifier un contrôle encore en cours.
+PATCH	/api/qualite-agricole/controles/{id}/statut	Terminer un contrôle avec une décision.
+PATCH	/api/qualite-agricole/controles/{id}/annulation	Annuler un contrôle en cours.
+GET	/api/qualite-agricole/controles/historique?recolteId={UUID}	Consulter l'historique d'une récolte.
+
+
+Exemple de création :
+{
+  "dateControle": "2026-11-21T10:00:00",
+  "typeControle": "RECEPTION",
+  "observations": "Contrôle de réception initialisé.",
+  "recolteId": "550e8400-e29b-41d4-a716-446655440000",
+  "idResponsable": 1
+}
+Exemple de fin de contrôle :
+{
+  "statut": "TERMINE"
+}
+La décision doit avoir été enregistrée avant cette demande.
+4.2 Certifications
+Base : /api/qualite-agricole/certifications
+Méthode	Endpoint	Fonction
+POST	/api/qualite-agricole/certifications	Créer une certification.
+GET	/api/qualite-agricole/certifications	Lister les certifications.
+GET	/api/qualite-agricole/certifications/{id}	Consulter une certification.
+PUT	/api/qualite-agricole/certifications/{id}	Modifier une certification non archivée.
+PATCH	/api/qualite-agricole/certifications/{id}/statut	Modifier le statut selon les règles d'expiration.
+PATCH	/api/qualite-agricole/certifications/{id}/archivage	Archiver une certification.
+GET	/api/qualite-agricole/certifications/recherche?nom=Bio	Rechercher par nom.
+GET	/api/qualite-agricole/certifications/recolte/{recolteId}	Lister les certifications d'une récolte.
+
+
+4.3 Rapports
+Base : /api/qualite-agricole/rapports
+Méthode	Endpoint	Fonction
+POST	/api/qualite-agricole/rapports/controles-qualite	Générer un rapport de contrôles.
+POST	/api/qualite-agricole/rapports/certifications	Générer un rapport de certifications.
+GET	/api/qualite-agricole/rapports	Lister les rapports.
+GET	/api/qualite-agricole/rapports/{id}	Consulter un rapport.
+GET	/api/qualite-agricole/rapports/responsable/{idResponsable}	Lister les rapports d'un responsable.
+GET	/api/qualite-agricole/rapports/{id}/telechargement	Télécharger le PDF.
+
+
+Exemple de demande de rapport :
+{
+  "idResponsable": 1,
+  "ids": [1]
+}
+5. Gestion centralisée des exceptions
+Les exceptions sont définies une seule fois dans le package exception. Les controllers ne doivent pas réécrire leur logique.
+BusinessException
+À utiliser lorsqu'une règle métier est violée : doublon de numéro, date invalide, tentative de modification d'une certification archivée, fin d'un contrôle sans décision, transition de statut interdite, etc.
+throw new BusinessException("Une décision qualité est obligatoire.");
+Le gestionnaire global retourne actuellement une réponse HTTP 400 Bad Request.
+ResourceNotFoundException
+À utiliser lorsqu'une ressource demandée n'existe pas : contrôle, certification ou rapport introuvable.
+throw new ResourceNotFoundException("Certification introuvable avec ID : " + id);
+Le gestionnaire global retourne 404 Not Found.
+GlobalExceptionHandler
+La classe est annotée @RestControllerAdvice et centralise les réponses :
+Exception	Code HTTP	Signification
+ResourceNotFoundException	404	Ressource introuvable.
+BusinessException	400	Règle métier non respectée.
+Autre Exception	500	Erreur interne générique.
+
+
+Exemple de réponse métier :
+{
+  "timestamp": "2026-11-21T21:12:12.9421262",
+  "status": 400,
+  "error": "Business Error",
+  "message": "Une décision qualité est obligatoire pour terminer le contrôle."
+}
+Le GlobalExceptionHandler empêche de répéter des try/catch dans chaque controller pour ces erreurs. Il est aussi important de ne pas renvoyer les détails internes sensibles d'une exception technique au client.
+6. MapStruct et DTO
+Les mappers sont des interfaces MapStruct, par exemple :
+@Mapper(componentModel = "spring")
+public interface ControleQualiteMapper {
+    ControleQualiteDTO toDTO(ControleQualite controle);
+    ControleQualite toEntity(ControleQualiteDTO dto);
+}
+- toEntity() transforme un DTO reçu en entité avant l'enregistrement.
+- toDTO() transforme une entité en DTO avant de répondre au client.
+- Les règles métier restent dans le service, pas dans le mapper.
+- Les DTO empêchent d'exposer directement les entités JPA comme contrat de l'API.
+7. Base de données H2
+Configuration locale utilisée pendant les tests :
+spring.datasource.username=sa
+spring.datasource.password=
+spring.datasource.url=jdbc:h2:file:./Database/Data/QualityCertification;AUTO_SERVER=TRUE
+spring.datasource.driver-class-name=org.h2.Driver
+spring.jpa.hibernate.ddl-auto=update
+La base est persistante (mode fichier), et non une base mémoire qui disparaît à l'arrêt.
+Console H2
+La console a été activée avec la dépendance Spring Boot 4 spring-boot-h2console et les propriétés :
+spring.h2.console.enabled=true
+spring.h2.console.path=/h2
+URL locale : http://localhost:8086/h2/
+
+Paramètres de connexion correspondant à la configuration ci-dessus :
+- JDBC URL : jdbc:h2:file:./Database/Data/QualityCertification;AUTO_SERVER=TRUE
+- User : sa
+- Password : vide
+Le chemin relatif est résolu à partir du répertoire de travail utilisé pour lancer l'application. Si le projet est lancé depuis un autre répertoire, le fichier de base peut se trouver ailleurs.
+Ne change pas le nom d'utilisateur H2 uniquement dans application.properties. L'utilisateur et le mot de passe doivent correspondre à ceux définis dans la base existante. Une configuration incorrecte empêche Hibernate d'obtenir les métadonnées JDBC et peut provoquer une erreur de détection du dialecte.
+
+8. Génération et stockage des PDF
+Configuration :
+app.file.upload-dir=uploads/rapports
+Le FileStorageConfig expose le répertoire sous forme de Path absolu normalisé. RapportPdfService utilise OpenPDF pour écrire le fichier.
+
+Les fichiers se trouvent normalement sous la racine du projet lancé :
+AgriLink-4DAS_I3/
++-- uploads/
+    +-- rapports/
+        +-- rapport_controles_....pdf
+        +-- rapport_certifications_....pdf
+La réponse de génération contient urlRapport, c'est le chemin du fichier sur le serveur. Ce n'est pas une URL web publique.
+
+Le téléchargement a été testé avec :
+- HTTP 200 OK ;
+- Content-Type: application/pdf ;
+- Content-Disposition: attachment.
+Les fichiers ont été retrouvés dans l'Explorateur Windows. S'ils ne sont pas visibles immédiatement dans IntelliJ, synchroniser/actualiser la vue Project ; leur absence de l'arborescence IntelliJ ne signifie pas nécessairement que le fichier n'existe pas sur le disque.
+Améliorations PDF encore à faire
+- Mettre les tableaux en A4 paysage si nécessaire.
+- Ajuster les largeurs des colonnes pour éviter les mots et UUID coupés.
+- Améliorer la taille de police, les en-têtes et les marges.
+- Utiliser une seule valeur LocalDateTime pour la date du PDF et celle de l'entité Rapport, afin d'éviter un léger décalage.
+- Vérifier les listes d'identifiants : identifiants inexistants, doublons et listes vides.
+- Vérifier le comportement lorsque le fichier référencé est absent du disque.
+9. Configuration applicative, Actuator, Eureka et Swagger
+Port et nom
+spring.application.name=quality-certification-service
+server.port=8086
+Eureka
+Le client Eureka est présent dans le pom.xml. En attendant que l'équipe démarre un serveur Eureka, la configuration utilisée pour les tests était :
+eureka.client.service-url.defaultZone=http://localhost:8761/eureka
+eureka.client.register-with-eureka=false
+eureka.client.fetch-registry=false
+eureka.instance.prefer-ip-address=false
+Cela évite au client d'essayer de s'enregistrer ou de récupérer le registre lorsqu'aucun serveur n'est disponible. Ces paramètres devront être revus pendant l'intégration.
+Actuator
+Dépendance : spring-boot-starter-actuator.
+
+Configuration utilisée :
+management.endpoints.web.exposure.include=health,info,metrics,loggers
+management.endpoint.health.show-details=always
+management.info.env.enabled=true
+info.app.name=Quality Certification Service
+info.app.version=1.0.0
+info.app.description=Microservice de controle qualite et suivi des certifications agricoles
+Endpoints locaux :
+- http://localhost:8086/actuator/health
+- http://localhost:8086/actuator/info
+- http://localhost:8086/actuator/metrics
+Swagger / OpenAPI
+Dépendance Springdoc ajoutée au Maven :
+<dependency>
+    <groupId>org.springdoc</groupId>
+    <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+    <version>3.2.1</version>
+</dependency>
+Propriétés :
+springdoc.api-docs.path=/v3/api-docs
+springdoc.swagger-ui.path=/swagger-ui.html
+URL locale utilisée : http://localhost:8086/swagger-ui.html
+
+Swagger a détecté les trois contrôleurs et leurs endpoints pendant les tests.
+Sécurité — attention avant intégration/déploiement
+Pendant les tests locaux, les dépendances spring-boot-starter-security et spring-boot-starter-security-oauth2-resource-server ont été retirées du pom.xml pour éviter la page de connexion Spring Security devant Actuator et les API.
+
+Conséquence : les endpoints ne sont pas protégés par cette configuration locale. Ne considère pas cette configuration comme prête pour une mise en production ou une intégration exposée. L'authentification et les autorisations devront être définies avec l'architecture de sécurité commune du projet (par exemple JWT/resource server si c'est la solution retenue par l'équipe).
+10. Tests Swagger déjà effectués
+Les éléments ci-dessous reprennent les résultats observés pendant les tests manuels. Ils ne remplacent pas une suite de tests automatisés.
+Contrôles qualité
+Test	Résultat observé
+Créer un contrôle initialement en EN_COURS	Réussi (200) ; décision initiale null.
+Modifier un contrôle en cours	Réussi (200).
+Terminer sans décision	Refusé (400) avec le message attendu.
+Enregistrer une décision CONFORME puis terminer	Réussi selon le test effectué.
+Réactiver un contrôle terminé	Refusé (400).
+Annuler un contrôle terminé	Refusé (400).
+Modifier un contrôle terminé	Refusé (400).
+Annuler un contrôle en cours	Réussi (200).
+Consulter un historique contenant un contrôle annulé	Le contrôle annulé était toujours présent.
+
+
+Certifications
+Test	Résultat observé
+Créer une certification	Réussi (200).
+Lister/consulter une certification	Réussi (200).
+Modifier date et document	Réussi après correction de update() (200).
+Numéro de certification dupliqué	Refusé (400) avec message métier.
+Date d'expiration avant date de délivrance	Refusée (400).
+Expirer manuellement une certification dont la date est future	Refusé (400).
+Modifier une certification avec date d'expiration passée	Le statut est devenu EXPIREE.
+Modifier une certification archivée	Refusé (400).
+Réactiver une certification archivée	Refusé (400) après correction/choix du bon endpoint.
+Archiver une certification expirée	Réussi (200).
+
+
+Rapports
+Test	Résultat observé
+Générer un rapport de contrôles	Réussi (200), métadonnées enregistrées.
+Télécharger le rapport de contrôles	Réussi (200, application/pdf).
+Générer un rapport de certifications	Réussi (200), métadonnées enregistrées.
+Télécharger le rapport de certifications	Réussi (200, application/pdf).
+Lire le contenu des PDF	Les données correspondaient aux enregistrements, mais la mise en page doit être améliorée.
+
+
+Tests qui restent à confirmer
+- Recherche de certifications par nom.
+- Recherche de certifications par recolteId.
+- GET /api/qualite-agricole/rapports.
+- GET /api/qualite-agricole/rapports/{id}.
+- GET /api/qualite-agricole/rapports/responsable/{idResponsable}.
+- Vérification après annulation que le nouvel ID annulé est toujours consultable individuellement et dans l'historique.
+- Tests des rapports avec listes vides, doublons et identifiants inconnus.
+- Tests automatisés JUnit/MockMvc ou tests d'intégration.
+11. Ce que MS6 fait et ne fait pas
+MS6 fait
+- Crée et gère les contrôles qualité.
+- Gère les décisions qualité et le cycle de vie des contrôles.
+- Conserve les contrôles annulés dans l'historique.
+- Crée, modifie, recherche et archive les certifications.
+- Vérifie l'unicité des numéros et la cohérence de base des dates.
+- Génère les rapports PDF de contrôles et de certifications.
+- Stocke les métadonnées des rapports dans H2 et les fichiers PDF sur disque.
+- Expose ses fonctions par API REST documentées avec OpenAPI/Swagger.
+MS6 ne fait pas (dans l'état décrit ici)
+- Ne gère pas lui-même les récoltes : il stocke leur UUID de référence.
+- Ne crée pas de table locale pour le responsable externe : il stocke son identifiant.
+- Ne prouve pas encore l'existence des récoltes/responsables en appelant leurs microservices.
+- Ne fournit pas l'interface utilisateur Angular : c'est le rôle du frontend (MS7 si c'est bien l'architecture décidée par l'équipe).
+- Ne stocke pas les octets PDF dans H2 : les fichiers sont sur le système de fichiers.
+- Ne dispose pas encore d'une expiration automatique planifiée démontrée pour toutes les certifications.
+- Ne doit pas être considéré comme sécurisé pour la production tant que l'authentification et les autorisations communes ne sont pas remises en place.
+12. Travail restant avant le push Git
+Logique métier et validation
+- [ ] Renforcer add() de CertificationService : nom, numéro, dates, références obligatoires et statut cohérent avec la date.
+- [ ] Décider et implémenter la vraie stratégie d'expiration automatique : calcul à la lecture/modification ou tâche planifiée.
+- [ ] Vérifier que archive() refuse une deuxième demande d'archivage et que le controller renvoie le message de confirmation souhaité.
+- [ ] Vérifier la règle de modification de recolteId et idResponsable dans une certification.
+- [ ] Vérifier les identifiants des contrôles/certifications lors de la génération des rapports.
+- [ ] Vérifier la gestion des IDs dupliqués et des listes vides lors de la génération de rapports.
+- [ ] Vérifier les réponses pour tous les identifiants inexistants.
+Qualité technique
+- [ ] Améliorer la mise en page des PDF et synchroniser leur date de génération avec celle de l'entité Rapport.
+- [ ] Compléter les réponses/documentations OpenAPI pour les erreurs 400, 404 et 500.
+- [ ] Ajouter des tests automatisés pour les règles métier critiques.
+- [ ] Vérifier le Build Maven propre et le démarrage depuis un clone propre du projet.
+- [ ] Vérifier la configuration Eureka avec l'équipe.
+- [ ] Définir la sécurité à utiliser avant intégration/déploiement.
+- [ ] Vérifier .gitignore : la base H2 locale, les répertoires de build et les PDF générés ne doivent pas être poussés par inadvertance. Garder uniquement les fichiers de test/documentation explicitement voulus.
+- [ ] Vérifier la branche Git de travail (chayma), les fichiers modifiés, puis effectuer le commit et le push.
+13. Commandes utiles Maven et Git
+Depuis la racine du projet :
+mvn -version
+mvn clean test
+mvn clean package
+Dans IntelliJ, on peut aussi utiliser Maven → Reload All Maven Projects, puis Build → Rebuild Project.
+
+Commandes Git de vérification :
+git status
+git branch --show-current
+git diff
+Avant le push, vérifier que la branche affichée est bien chayma et que les fichiers locaux non destinés au dépôt ne sont pas inclus.
+14. Résumé à mémoriser
+- Controller : reçoit les requêtes REST et appelle le service.
+- Service : contient les règles métier.
+- Repository : accède à la base.
+- Entity : représente les données stockées.
+- DTO : représente les données échangées avec le client.
+- Mapper : convertit DTO et entités.
+- Exception : représente une erreur métier ou une ressource absente.
+- GlobalExceptionHandler : transforme les exceptions en réponses HTTP uniformes.
+- Swagger : permet de documenter et tester les API.
+- Actuator : expose des informations de santé et de supervision.
+- H2 : base de données locale utilisée pendant le développement.
+- OpenPDF : génère les fichiers PDF.
+- Eureka Client : permet l'enregistrement/découverte des microservices lorsque le serveur Eureka de l'équipe est disponible.
+- MS7/Angular : peut fournir l'interface utilisateur centralisée, tandis que MS6 garde ses API et sa logique métier.
+Conseil de révision : pour expliquer MS6 à l'oral, présente d'abord ses trois responsabilités (contrôles, certifications, rapports), puis explique le parcours d'une requête (Controller → Service → Repository → base), et enfin montre les règles métier testées avec Swagger.
