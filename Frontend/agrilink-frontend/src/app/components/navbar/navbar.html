@@ -1,0 +1,50 @@
+<nav class="navbar" [class.scrolled]="isScrolled() || !isHomePage()">
+  <div class="container">
+    <div class="navbar__inner">
+      <!-- LOGO -->
+      <a class="navbar__logo" routerLink="/">
+        <img src="logo_Agrilink.png" alt="AgriLink" class="navbar__logo-img">
+      </a>
+
+      <!-- NAV LINKS -->
+      <ul class="navbar__links" [class.open]="mobileMenuOpen()">
+        @for (link of navLinks; track link.label) {
+          <li>
+            <a 
+              [routerLink]="link.href" 
+              routerLinkActive="active" 
+              [routerLinkActiveOptions]="{ exact: link.href === '/' }"
+            >
+              {{ link.label }}
+            </a>
+          </li>
+        }
+      </ul>
+
+      <!-- ACTIONS -->
+      <div class="navbar__actions">
+        <a routerLink="/marketplace" class="btn-cta">
+          Marketplace
+          <span class="btn-cta-arrow">
+            <i class="fa fa-arrow-right"></i>
+          </span>
+        </a>
+        <a routerLink="/marketplace" class="icon-btn search-btn" aria-label="Search" title="Rechercher">
+          <i class="fa fa-search"></i>
+        </a>
+        <a routerLink="/marketplace" class="icon-btn cart-btn" aria-label="Cart" title="Mon Panier">
+          <i class="fa fa-shopping-basket"></i>
+          <span class="badge">3</span>
+        </a>
+        <button class="icon-btn user-btn" aria-label="Profile">
+          <i class="fa fa-bars"></i>
+        </button>
+      </div>
+
+      <!-- HAMBURGER -->
+      <button class="hamburger" (click)="toggleMobile()" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+</nav>

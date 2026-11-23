@@ -1,0 +1,256 @@
+<!-- ===== HERO SLIDER ===== -->
+<section class="hero">
+  @for (slide of slides; track slide.title; let i = $index) {
+    <div class="hero__slide" [class.active]="currentSlide() === i"
+         [style.background-image]="'url(' + slide.image + ')'">
+      <div class="hero__overlay"></div>
+    </div>
+  }
+
+  <div class="hero__content container">
+    <div class="hero__text" [class.animate-in]="true">
+      <span class="hero__tag">{{ currentSlideData.tag }}</span>
+      <h1 class="hero__title">{{ currentSlideData.title }}</h1>
+      <div class="hero__underline"></div>
+      <p class="hero__desc">{{ currentSlideData.desc }}</p>
+      <div class="hero__cta-group">
+        <a routerLink="/marketplace" class="btn-primary hero__btn">
+          Explorer la Marketplace
+          <span class="btn-icon"><i class="fa fa-shopping-basket"></i></span>
+        </a>
+        <button class="btn-outline hero__btn-outline" (click)="scrollToServices()">
+          Nos services
+          <span class="btn-icon"><i class="fa fa-arrow-down"></i></span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- NAV ARROWS -->
+  <button class="hero__arrow hero__arrow--prev" (click)="prevSlide()">
+    <i class="fa fa-arrow-left"></i>
+  </button>
+  <button class="hero__arrow hero__arrow--next" (click)="nextSlide()">
+    <i class="fa fa-arrow-right"></i>
+  </button>
+
+  <!-- DOTS -->
+  <div class="hero__dots">
+    @for (slide of slides; track slide.title; let i = $index) {
+      <button class="hero__dot" [class.active]="currentSlide() === i"
+              (click)="goToSlide(i)"></button>
+    }
+  </div>
+</section>
+
+<!-- ===== GRASS DIVIDER ===== -->
+<div class="grass-wave"></div>
+
+<!-- ===== FEATURE CARDS ===== -->
+<section class="features" data-animate="features">
+  <div class="container">
+    <div class="features__header" [class.visible]="isVisible('features')">
+      <span class="section-tag">Nos atouts</span>
+      <h2 class="section-title">Pourquoi Choisir AgriLink ?</h2>
+      <p class="section-desc">Une plateforme complète pour acheter, vendre et suivre vos produits agricoles en toute transparence.</p>
+      <div class="wheat-sep">🌾</div>
+    </div>
+    <div class="features__grid" [class.visible]="isVisible('features')">
+      @for (card of featureCards; track card.title; let i = $index) {
+        <div class="feature-card" [style.animation-delay]="(i * 0.1) + 's'">
+          <div class="feature-card__icon">{{ card.icon }}</div>
+          <h3 class="feature-card__title">{{ card.title }}</h3>
+          <p class="feature-card__desc">{{ card.desc }}</p>
+        </div>
+      }
+    </div>
+  </div>
+</section>
+
+<!-- ===== ABOUT ===== -->
+<section class="about" data-animate="about">
+  <div class="container">
+    <div class="about__grid" [class.visible]="isVisible('about')">
+      <!-- LEFT -->
+      <div class="about__left">
+        <span class="section-tag">La plateforme qui connecte producteurs et consommateurs</span>
+        <h2 class="section-title">La marketplace agricole qui simplifie la vente et la distribution des produits frais.</h2>
+        <p class="about__text">
+          AgriLink est une plateforme web dédiée au secteur agricole. Elle permet aux producteurs de publier leurs produits, gérer leurs stocks et leurs récoltes, et aux clients de découvrir des produits frais en toute transparence.
+        </p>
+        <p class="about__text">
+          Grâce à une architecture moderne et des outils de suivi, AgriLink centralise les commandes, les livraisons, les coopératives, les contrôles qualité et les certifications agricoles.
+        </p>
+        <ul class="about__benefits">
+          @for (b of benefits; track b) {
+            <li><i class="fa fa-check-circle"></i> {{ b }}</li>
+          }
+        </ul>
+        <div class="about__perks">
+          @for (p of perks; track p.title) {
+            <div class="perk">
+              <span class="perk-icon">{{ p.icon }}</span>
+              <span class="perk-label">{{ p.title }}</span>
+            </div>
+          }
+        </div>
+        <button class="btn-primary about__cta">
+          En savoir plus
+          <span class="btn-icon"><i class="fa fa-arrow-right"></i></span>
+        </button>
+      </div>
+
+      <!-- RIGHT -->
+      <div class="about__right">
+        <div class="about__stat-box">
+          <div class="stat-box__header">
+            <span>Utilisateurs inscrits</span>
+            <span class="stat-box__icon"><i class="fa fa-seedling"></i></span>
+          </div>
+          <div class="stat-box__value">2,500+</div>
+          <p class="stat-box__desc">Producteurs, clients, transporteurs et coopératives déjà connectés sur la plateforme.</p>
+        </div>
+        <div class="about__img-wrap">
+          <img src="https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=700&q=80" alt="Farm" loading="lazy">
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== SERVICES ===== -->
+<section class="services" id="services" data-animate="services">
+  <div class="services__bg-art"></div>
+  <div class="container">
+    <div class="services__header" [class.visible]="isVisible('services')">
+      <span class="section-tag">Que propose AgriLink ?</span>
+      <h2 class="section-title services__title">Les Fonctionnalités<br>De Notre Plateforme</h2>
+      <p class="section-desc services__desc">
+        Une solution complète pour acheter, vendre et suivre les produits agricoles, de la ferme à la livraison.
+      </p>
+      <div class="wheat-sep">🌾</div>
+    </div>
+
+    <div class="services__grid" [class.visible]="isVisible('services')">
+      @for (service of services; track service.title; let i = $index) {
+        <div class="service-card" [style.animation-delay]="(i * 0.12) + 's'">
+          <div class="service-card__icon-wrap">
+            <span class="service-card__icon">{{ service.icon }}</span>
+          </div>
+          <h3 class="service-card__title">{{ service.title }}</h3>
+          <p class="service-card__desc">{{ service.desc }}</p>
+          <a href="#" class="service-card__link">
+            <i class="fa fa-arrow-right"></i>
+          </a>
+        </div>
+      }
+    </div>
+  </div>
+</section>
+
+<!-- ===== STATS COUNTER ===== -->
+<section class="stats" data-animate="stats">
+  <div class="stats__bg"></div>
+  <div class="container">
+    <div class="stats__grid" [class.visible]="isVisible('stats')">
+      @for (stat of stats; track stat.label; let i = $index) {
+        <div class="stat-item" [style.animation-delay]="(i * 0.15) + 's'">
+          <span class="stat-item__icon">{{ stat.icon }}</span>
+          <div class="stat-item__value">{{ getStatValue(i) | number }}</div>
+          <div class="stat-item__label">{{ stat.label }}</div>
+        </div>
+      }
+    </div>
+  </div>
+</section>
+
+<!-- ===== QUOTE BANNER ===== -->
+<section class="quote-banner" data-animate="quote">
+  <div class="quote-banner__overlay"></div>
+  <div class="container">
+    <h2 class="quote-banner__text" [class.visible]="isVisible('quote')">
+      Du Producteur<br>
+      Au Consommateur,<br>
+      En Toute Transparence
+    </h2>
+  </div>
+</section>
+
+<!-- ===== CONTACT ===== -->
+<section class="contact" data-animate="contact">
+  <div class="container">
+    <div class="contact__grid" [class.visible]="isVisible('contact')">
+      <!-- LEFT -->
+      <div class="contact__left">
+        <img src="contact.png" alt="Farmer" class="contact__img" loading="lazy">
+        <div class="contact__info-box">
+          <div class="contact__info-item">
+            <span class="ci-icon"><i class="fa fa-map-marker-alt"></i></span>
+            <div>
+              <strong>Siège AgriLink</strong>
+              <span>Tunis, Tunisie</span>
+            </div>
+          </div>
+          <div class="contact__info-item">
+            <span class="ci-icon"><i class="fa fa-envelope"></i></span>
+            <div>
+              <strong>Contactez-nous</strong>
+              <span>contact&#64;agrilink.tn<br>Appelez-nous : +216 12 345 678</span>
+            </div>
+          </div>
+          <div class="contact__info-item">
+            <span class="ci-icon"><i class="fa fa-clock"></i></span>
+            <div>
+              <strong>Horaires d'ouverture</strong>
+              <span>Lun - Ven : 8h00 - 18h00<br>Sam : 9h00 - 17h00</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT FORM -->
+      <div class="contact__form-wrap">
+        <span class="section-tag">Travaillons ensemble</span>
+        <h2 class="section-title">Contactez-nous !</h2>
+        <p class="section-desc">Nous vous répondrons sous 24h par email. Merci de nous avoir contactés.</p>
+        <div class="wheat-sep">🌾</div>
+        <form class="contact__form">
+          <div class="form-row">
+            <div class="form-group">
+              <input type="text" placeholder="Nom*" required>
+            </div>
+            <div class="form-group">
+              <input type="email" placeholder="Email*" required>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <input type="tel" placeholder="Téléphone*">
+            </div>
+            <div class="form-group">
+              <select>
+                <option value="">Vous avez besoin d'aide ?</option>
+                <option>Demande générale</option>
+                <option>Partenariat</option>
+                <option>Support technique</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <textarea rows="5" placeholder="Votre message..."></textarea>
+          </div>
+          <div class="form-footer">
+            <label class="checkbox-wrap">
+              <input type="checkbox">
+              <span>J'accepte les conditions générales</span>
+            </label>
+            <button type="submit" class="btn-primary">
+              Envoyer
+              <span class="btn-icon"><i class="fa fa-paper-plane"></i></span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,578 @@
+@if (product(); as prod) {
+
+  <!-- ===== HERO BANNER ===== -->
+  <section class="prod-hero">
+    <div class="prod-hero__overlay"></div>
+    <div class="container prod-hero__content">
+      <span class="prod-hero__subtitle">Aliments Sains Direct Producteur</span>
+      <h1 class="prod-hero__title">DÉTAIL DU PRODUIT</h1>
+      <div class="prod-hero__brush"></div>
+      <div class="prod-hero__breadcrumb">
+        <a routerLink="/">Accueil</a>
+        <span class="sep">→</span>
+        <a routerLink="/marketplace">Marketplace</a>
+        <span class="sep">→</span>
+        <span class="current">{{ prod.name }}</span>
+      </div>
+    </div>
+    <div class="grass-divider-wave"></div>
+  </section>
+
+  <!-- ===== 4 HIGHLIGHT SERVICE BOXES ===== -->
+  <section class="service-highlights">
+    <div class="container">
+      <div class="highlights-grid">
+        <div class="highlight-item">
+          <div class="highlight-icon-circle">
+            <i class="fa fa-rocket"></i>
+          </div>
+          <div class="highlight-info">
+            <h4>Livraison Direct Ferme</h4>
+            <p>Livré frais dans les 24h suivant la récolte artisanale.</p>
+          </div>
+        </div>
+
+        <div class="highlight-item">
+          <div class="highlight-icon-circle">
+            <i class="fa fa-shield-alt"></i>
+          </div>
+          <div class="highlight-info">
+            <h4>Paiement 100% Sécurisé</h4>
+            <p>Paiement sécurisé en ligne ou à la livraison.</p>
+          </div>
+        </div>
+
+        <div class="highlight-item">
+          <div class="highlight-icon-circle">
+            <i class="fa fa-headset"></i>
+          </div>
+          <div class="highlight-info">
+            <h4>Support Dédié 24/7</h4>
+            <p>Conseillers agricoles à votre disposition.</p>
+          </div>
+        </div>
+
+        <div class="highlight-item">
+          <div class="highlight-icon-circle">
+            <i class="fa fa-tag"></i>
+          </div>
+          <div class="highlight-info">
+            <h4>Offres Direct Producteur</h4>
+            <p>Sans intermédiaire, prix juste pour vous et l'agriculteur.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== NOTIFICATION MESSAGE ===== -->
+  @if (addedToCartMessage()) {
+    <div class="cart-toast-notification">
+      <i class="fa fa-check-circle"></i>
+      <span>{{ addedToCartMessage() }}</span>
+    </div>
+  }
+
+  <!-- ===== PRODUCT MAIN SECTION ===== -->
+  <section class="product-main-view">
+    <div class="container">
+      <div class="product-main-grid">
+
+        <!-- LEFT: GALLERY -->
+        <div class="product-gallery">
+          <div class="gallery-main-frame">
+            <img [src]="selectedImage()" [alt]="prod.name" class="gallery-main-img">
+            @if (prod.isBio) {
+              <div class="gallery-bio-tag">🌿 100% BIO</div>
+            }
+          </div>
+
+          <div class="gallery-thumbnails">
+            @for (thumb of prod.gallery; track thumb) {
+              <div 
+                class="thumb-item" 
+                [class.active]="selectedImage() === thumb"
+                (click)="setImage(thumb)"
+              >
+                <img [src]="thumb" [alt]="prod.name">
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- RIGHT: PRODUCT DETAILS & PURCHASE -->
+        <div class="product-info-panel">
+          <h1 class="prod-title">{{ prod.name }}</h1>
+
+          <!-- RATING -->
+          <div class="prod-rating-row">
+            <div class="stars">
+              <i class="fa fa-star"></i>
+              <i class="fa fa-star"></i>
+              <i class="fa fa-star"></i>
+              <i class="fa fa-star"></i>
+              <i class="fa fa-star"></i>
+            </div>
+            <span class="rating-text">{{ prod.rating.toFixed(2) }} ({{ prod.reviewsCount }} avis clients)</span>
+          </div>
+
+          <!-- SELECTED FARMER & PRICE -->
+          @if (selectedOffer(); as offer) {
+            <div class="current-selected-farmer-card">
+              <div class="cf-header">
+                <span class="cf-badge">Agriculteur sélectionné</span>
+                <span class="cf-stock"><i class="fa fa-check"></i> {{ offer.availableStock }} {{ offer.unit }}s en stock</span>
+              </div>
+              <div class="cf-body">
+                <img [src]="offer.farmerAvatar" [alt]="offer.farmerName" class="cf-avatar">
+                <div class="cf-info">
+                  <strong class="cf-farmer-name">{{ offer.farmerName }}</strong>
+                  <span class="cf-farm-name">{{ offer.farmName }} • 📍 {{ offer.location }}</span>
+                  <span class="cf-freshness">🚜 {{ offer.harvestDate }} • {{ offer.certification }}</span>
+                </div>
+                <div class="cf-price-block">
+                  <div class="price-val">
+                    @if (offer.originalPrice) {
+                      <span class="original-price">{{ offer.originalPrice.toFixed(3) }} DT</span>
+                    }
+                    <span class="final-price">{{ offer.price.toFixed(3) }} <small>DT / {{ offer.unit }}</small></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          }
+
+          <!-- SHORT DESC -->
+          <p class="prod-short-desc">{{ prod.shortDescription }}</p>
+
+          <!-- SOCIAL PROOF ALERTS -->
+          <div class="social-proof-alerts">
+            <div class="proof-alert stock-alert">
+              <span class="proof-icon">📦</span>
+              <span><strong>Disponible :</strong> En stock chez plusieurs agriculteurs locaux</span>
+            </div>
+            <div class="proof-alert viewers-alert">
+              <span class="proof-icon">👥</span>
+              <span><strong>{{ prod.viewersCount }} personnes</strong> consultent ce produit actuellement</span>
+            </div>
+            <div class="proof-alert sold-alert">
+              <span class="proof-icon">🔥</span>
+              <span><strong>{{ prod.soldLastHours }} ventes</strong> directes ces dernières 3 heures</span>
+            </div>
+          </div>
+
+          <!-- ACTION CONTROLS -->
+          <div class="prod-actions-row">
+            <div class="qty-stepper">
+              <button class="qty-btn minus" (click)="decrementQty()">-</button>
+              <input type="number" [value]="quantity()" readonly>
+              <button class="qty-btn plus" (click)="incrementQty()">+</button>
+            </div>
+
+            <button class="btn-add-to-cart" (click)="addToCart()">
+              <span>Ajouter au Panier</span>
+              <span class="btn-cart-circle">
+                <i class="fa fa-shopping-cart"></i>
+              </span>
+            </button>
+
+            <button 
+              class="btn-icon-square" 
+              [class.active]="isFavorite()" 
+              (click)="toggleFavorite()"
+              title="Ajouter aux favoris"
+            >
+              <i class="fa fa-heart"></i>
+            </button>
+
+            <button class="btn-icon-square" title="Comparer les offres">
+              <i class="fa fa-exchange-alt"></i>
+            </button>
+          </div>
+
+          <!-- META ATTRIBUTES -->
+          <div class="prod-meta-box">
+            <div class="meta-row">
+              <span class="meta-label">RÉF / SKU :</span>
+              <span class="meta-value">{{ prod.sku }}</span>
+            </div>
+            <div class="meta-row">
+              <span class="meta-label">CATÉGORIE :</span>
+              <span class="meta-value link-highlight">{{ prod.category }}</span>
+            </div>
+            <div class="meta-row">
+              <span class="meta-label">TAGS :</span>
+              <span class="meta-value">
+                @for (t of prod.tags; track t) {
+                  <span class="tag-pill">{{ t }}</span>
+                }
+              </span>
+            </div>
+            <div class="meta-row share-row">
+              <span class="meta-label">PARTAGER :</span>
+              <div class="social-share-icons">
+                <a href="#"><i class="fab fa-facebook-f"></i></a>
+                <a href="#"><i class="fab fa-twitter"></i></a>
+                <a href="#"><i class="fab fa-instagram"></i></a>
+                <a href="#"><i class="fab fa-pinterest-p"></i></a>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== SECTION CRUCIALE: OFFRES DE DIFFÉRENTS AGRICULTEURS POUR CE PRODUIT ===== -->
+  <section class="farmers-offers-section" id="farmers-offers">
+    <div class="container">
+      <div class="farmers-section-header">
+        <span class="fsh-tag">🌾 Offres Directes des Producteurs</span>
+        <h2 class="fsh-title">Ce Produit Est Disponible Chez {{ prod.offers.length }} Agriculteurs</h2>
+        <p class="fsh-desc">
+          Chaque agriculteur cultive avec son terroir et fixe ses propres conditions (prix, récolte, proximité). Choisissez l'offre qui vous correspond le mieux :
+        </p>
+      </div>
+
+      <div class="offers-grid">
+        @for (offer of prod.offers; track offer.id) {
+          <div 
+            class="offer-card" 
+            [class.selected]="selectedOffer()?.id === offer.id"
+            [class.best-offer]="offer.isBestPrice"
+          >
+            <!-- CARD TOP BADGES -->
+            <div class="offer-card__top">
+              @if (offer.isBestPrice) {
+                <span class="offer-pill best-price-pill">
+                  <i class="fa fa-award"></i> Meilleur Prix
+                </span>
+              }
+              @if (offer.isLocalFavorite) {
+                <span class="offer-pill local-pill">
+                  <i class="fa fa-heart"></i> Coup de cœur local
+                </span>
+              }
+              @if (offer.isEcoFriendly) {
+                <span class="offer-pill eco-pill">
+                  <i class="fa fa-leaf"></i> 100% Écologique
+                </span>
+              }
+            </div>
+
+            <!-- FARMER PROFILE -->
+            <div class="farmer-profile">
+              <img [src]="offer.farmerAvatar" [alt]="offer.farmerName" class="farmer-avatar-lg">
+              <div class="farmer-details">
+                <div class="farmer-name-row">
+                  <h3 class="farmer-name">{{ offer.farmerName }}</h3>
+                  <span class="verified-badge" title="Agriculteur certifié AgriLink">
+                    <i class="fa fa-check-circle"></i> Vérifié
+                  </span>
+                </div>
+                <span class="farm-title">{{ offer.farmName }}</span>
+                <span class="farm-location">
+                  <i class="fa fa-map-marker-alt"></i> {{ offer.location }} 
+                  <small>({{ offer.distanceKm }} km)</small>
+                </span>
+              </div>
+            </div>
+
+            <!-- OFFER STATS & SPECIFICATIONS -->
+            <div class="offer-specs">
+              <div class="spec-row">
+                <span class="spec-icon">🚜</span>
+                <div class="spec-content">
+                  <strong>Récolte :</strong>
+                  <span>{{ offer.harvestDate }}</span>
+                </div>
+              </div>
+              <div class="spec-row">
+                <span class="spec-icon">🌿</span>
+                <div class="spec-content">
+                  <strong>Label :</strong>
+                  <span>{{ offer.certification }}</span>
+                </div>
+              </div>
+              <div class="spec-row">
+                <span class="spec-icon">🚚</span>
+                <div class="spec-content">
+                  <strong>Livraison :</strong>
+                  <span>{{ offer.deliveryTime }}</span>
+                </div>
+              </div>
+              <div class="spec-row">
+                <span class="spec-icon">📦</span>
+                <div class="spec-content">
+                  <strong>Stock :</strong>
+                  <span>{{ offer.availableStock }} {{ offer.unit }}s (Min: {{ offer.minOrderQuantity }})</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- FARMER PERSONAL NOTE -->
+            <div class="farmer-quote">
+              <i class="fa fa-quote-left quote-icon"></i>
+              <p>« {{ offer.farmerNote }} »</p>
+            </div>
+
+            <!-- PRICE & SELECTION ACTION -->
+            <div class="offer-card__footer">
+              <div class="offer-pricing">
+                @if (offer.originalPrice) {
+                  <span class="old-price">{{ offer.originalPrice.toFixed(3) }} DT</span>
+                }
+                <div class="price-display">
+                  <span class="amount">{{ offer.price.toFixed(3) }}</span>
+                  <span class="currency">DT / {{ offer.unit }}</span>
+                </div>
+              </div>
+
+              <button 
+                class="btn-select-offer" 
+                [class.btn-selected]="selectedOffer()?.id === offer.id"
+                (click)="selectFarmerOffer(offer)"
+              >
+                @if (selectedOffer()?.id === offer.id) {
+                  <span><i class="fa fa-check"></i> Sélectionné</span>
+                } @else {
+                  <span>Sélectionner cet agriculteur</span>
+                }
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== TABS SECTION ===== -->
+  <section class="product-tabs-section">
+    <div class="container">
+      <div class="tabs-nav">
+        <button 
+          class="tab-btn" 
+          [class.active]="activeTab() === 'description'"
+          (click)="setTab('description')"
+        >
+          Description
+        </button>
+        <button 
+          class="tab-btn" 
+          [class.active]="activeTab() === 'farmers'"
+          (click)="setTab('farmers')"
+        >
+          Offres Agriculteurs ({{ prod.offers.length }})
+        </button>
+        <button 
+          class="tab-btn" 
+          [class.active]="activeTab() === 'additional'"
+          (click)="setTab('additional')"
+        >
+          Informations Complémentaires
+        </button>
+        <button 
+          class="tab-btn" 
+          [class.active]="activeTab() === 'reviews'"
+          (click)="setTab('reviews')"
+        >
+          Avis Clients ({{ prod.reviewsCount }})
+        </button>
+      </div>
+
+      <div class="tab-content-panel">
+        <!-- DESCRIPTION TAB -->
+        @if (activeTab() === 'description') {
+          <div class="tab-pane animate-fade">
+            <h3 class="pane-title">À propos de {{ prod.name }}</h3>
+            <p class="pane-text">{{ prod.fullDescription }}</p>
+            <div class="pane-features">
+              <div class="p-feature">
+                <i class="fa fa-check-circle"></i>
+                <span>100% direct producteur sans chambre froide prolongée</span>
+              </div>
+              <div class="p-feature">
+                <i class="fa fa-check-circle"></i>
+                <span>Rémunération équitable pour l'agriculteur partenaire</span>
+              </div>
+              <div class="p-feature">
+                <i class="fa fa-check-circle"></i>
+                <span>Traçabilité complète de la parcelle à votre panier</span>
+              </div>
+            </div>
+          </div>
+        }
+
+        <!-- FARMERS TAB -->
+        @if (activeTab() === 'farmers') {
+          <div class="tab-pane animate-fade">
+            <h3 class="pane-title">Tous les Agriculteurs Partenaires pour ce Produit</h3>
+            <p class="pane-text">
+              AgriLink permet à différents agriculteurs régionaux de proposer directement leur production. Vous avez ainsi la liberté de choisir l'agriculteur selon son emplacement géographique, ses méthodes de culture et son tarif.
+            </p>
+            <div class="farmers-summary-table-wrap">
+              <table class="farmers-summary-table">
+                <thead>
+                  <tr>
+                    <th>Agriculteur &amp; Ferme</th>
+                    <th>Région</th>
+                    <th>Fraîcheur</th>
+                    <th>Certification</th>
+                    <th>Prix / {{ prod.offers[0]?.unit }}</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (off of prod.offers; track off.id) {
+                    <tr [class.highlighted-row]="selectedOffer()?.id === off.id">
+                      <td>
+                        <div class="table-farmer-cell">
+                          <img [src]="off.farmerAvatar" [alt]="off.farmerName" class="table-avatar">
+                          <div>
+                            <strong>{{ off.farmerName }}</strong>
+                            <small>{{ off.farmName }}</small>
+                          </div>
+                        </div>
+                      </td>
+                      <td>{{ off.location }} ({{ off.distanceKm }} km)</td>
+                      <td>{{ off.harvestDate }}</td>
+                      <td><span class="badge-certif">{{ off.certification }}</span></td>
+                      <td class="table-price"><strong>{{ off.price.toFixed(3) }} DT</strong></td>
+                      <td>
+                        <button 
+                          class="btn-table-pick" 
+                          [class.btn-table-active]="selectedOffer()?.id === off.id"
+                          (click)="selectFarmerOffer(off)"
+                        >
+                          {{ selectedOffer()?.id === off.id ? '✓ Sélectionné' : 'Choisir' }}
+                        </button>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+        }
+
+        <!-- ADDITIONAL INFO TAB -->
+        @if (activeTab() === 'additional') {
+          <div class="tab-pane animate-fade">
+            <h3 class="pane-title">Fiche Technique &amp; Conseils</h3>
+            <div class="additional-info-grid">
+              <div class="info-card">
+                <span class="info-label">Origine Terroir :</span>
+                <span class="info-val">{{ prod.additionalInfo.origin }}</span>
+              </div>
+              <div class="info-card">
+                <span class="info-label">Variété :</span>
+                <span class="info-val">{{ prod.additionalInfo.variety }}</span>
+              </div>
+              <div class="info-card">
+                <span class="info-label">Conseils de Conservation :</span>
+                <span class="info-val">{{ prod.additionalInfo.conservation }}</span>
+              </div>
+              <div class="info-card">
+                <span class="info-label">Type d'Emballage :</span>
+                <span class="info-val">{{ prod.additionalInfo.packaging }}</span>
+              </div>
+            </div>
+          </div>
+        }
+
+        <!-- REVIEWS TAB -->
+        @if (activeTab() === 'reviews') {
+          <div class="tab-pane animate-fade">
+            <h3 class="pane-title">Avis des Consommateurs</h3>
+            <div class="reviews-container">
+              <div class="review-box">
+                <div class="review-header">
+                  <div class="reviewer-meta">
+                    <strong>Nadia Cherif</strong>
+                    <span class="review-date">Il y a 3 jours • Achat vérifié</span>
+                  </div>
+                  <div class="stars">
+                    <i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i>
+                  </div>
+                </div>
+                <p class="review-body">
+                  « Produit reçu ultra frais le lendemain de la cueillette ! Le goût est incomparable avec ce qu'on trouve en grande surface. Je recommande particulièrement l'agriculteur {{ prod.offers[0]?.farmerName }}. »
+                </p>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== RELATED PRODUCTS ===== -->
+  <section class="related-products-section">
+    <div class="container">
+      <div class="related-header">
+        <h2 class="related-title">Produits Similaires du Terroir</h2>
+        <div class="wheat-sep">🌾</div>
+      </div>
+
+      <div class="related-grid">
+        @for (rel of relatedProducts(); track rel.id) {
+          <div class="related-card">
+            <div class="rel-img-wrap">
+              <img [src]="rel.image" [alt]="rel.name" loading="lazy">
+            </div>
+            <div class="rel-body">
+              <h4><a [routerLink]="['/product', rel.id]">{{ rel.name }}</a></h4>
+              <span class="rel-unit">{{ rel.unit }}</span>
+              <span class="rel-farmers-info">🌾 {{ rel.offers.length }} agriculteurs disponibles</span>
+              <a [routerLink]="['/product', rel.id]" class="btn-rel-link">
+                Voir les offres <i class="fa fa-arrow-right"></i>
+              </a>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== STICKY BOTTOM BAR (Like Screenshot 4 & 5) ===== -->
+  <div class="sticky-cart-bar">
+    <div class="container sticky-cart-inner">
+      <div class="sticky-product-meta">
+        <img [src]="prod.image" [alt]="prod.name" class="sticky-thumb">
+        <div class="sticky-text">
+          <strong class="sticky-title">{{ prod.name }}</strong>
+          @if (selectedOffer(); as off) {
+            <span class="sticky-farmer-tag">
+              Agriculteur : {{ off.farmerName }} ({{ off.price.toFixed(3) }} DT / {{ off.unit }})
+            </span>
+          }
+        </div>
+      </div>
+
+      <div class="sticky-actions">
+        <div class="sticky-qty">
+          <button (click)="decrementQty()">-</button>
+          <span>{{ quantity() }}</span>
+          <button (click)="incrementQty()">+</button>
+        </div>
+
+        <button class="sticky-add-btn" (click)="addToCart()">
+          <span>Ajouter au Panier</span>
+          <i class="fa fa-shopping-cart"></i>
+        </button>
+
+        <button class="sticky-icon-btn" [class.fav]="isFavorite()" (click)="toggleFavorite()">
+          <i class="fa fa-heart"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+} @else {
+  <div class="container not-found-view">
+    <h2>Produit introuvable</h2>
+    <a routerLink="/marketplace" class="btn-primary">Retour à la Marketplace</a>
+  </div>
+}
