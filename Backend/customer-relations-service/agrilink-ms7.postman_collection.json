@@ -1,0 +1,408 @@
+{
+  "info": {
+    "_postman_id": "7f89d3a1-2d7c-45a8-9d62-agrilink-ms7",
+    "name": "AgriLink MS7 - Customer Relations Management",
+    "description": "Collection Postman pour tester l'ensemble des endpoints du microservice MS7 Customer Relations de l'application AgriLink (Avis, Réclamations, Messages de réclamations).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3007",
+      "type": "string"
+    },
+    {
+      "key": "clientId",
+      "value": "client-001",
+      "type": "string"
+    },
+    {
+      "key": "agriculteurId",
+      "value": "agri-001",
+      "type": "string"
+    },
+    {
+      "key": "commandeId",
+      "value": "cmd-001",
+      "type": "string"
+    },
+    {
+      "key": "reviewId",
+      "value": "665f1f77bcf86cd799439011",
+      "type": "string"
+    },
+    {
+      "key": "complaintId",
+      "value": "665f1f77bcf86cd799439022",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Reviews (Avis)",
+      "item": [
+        {
+          "name": "Créer un avis (Client)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "x-utilisateur-id",
+                "value": "{{clientId}}",
+                "type": "text"
+              },
+              {
+                "key": "x-utilisateur-role",
+                "value": "CLIENT",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"clientId\": \"{{clientId}}\",\n  \"agriculteurId\": \"{{agriculteurId}}\",\n  \"commandeId\": \"{{commandeId}}\",\n  \"note\": 5,\n  \"commentaire\": \"Excellente qualité des légumes et livraison rapide !\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/reviews",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "reviews"]
+            },
+            "description": "Noter un agriculteur après une commande livrée (note entre 1 et 5)."
+          }
+        },
+        {
+          "name": "Consulter les avis d'un agriculteur",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/reviews/agriculteur/{{agriculteurId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "reviews", "agriculteur", "{{agriculteurId}}"]
+            },
+            "description": "Récupérer la liste des avis reçus par un agriculteur."
+          }
+        },
+        {
+          "name": "Consulter la moyenne des notes d'un agriculteur",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/reviews/agriculteur/{{agriculteurId}}/average",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "reviews", "agriculteur", "{{agriculteurId}}", "average"]
+            },
+            "description": "Calculer la moyenne des notes et le nombre total d'avis pour un agriculteur."
+          }
+        },
+        {
+          "name": "Consulter un avis par son ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/reviews/{{reviewId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "reviews", "{{reviewId}}"]
+            },
+            "description": "Obtenir les détails d'un avis via son identifiant MongoDB."
+          }
+        },
+        {
+          "name": "Modifier son propre avis (Client)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "x-utilisateur-id",
+                "value": "{{clientId}}",
+                "type": "text"
+              },
+              {
+                "key": "x-utilisateur-role",
+                "value": "CLIENT",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"note\": 4,\n  \"commentaire\": \"Mise à jour: très bons produits, emballage perfectible.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/reviews/{{reviewId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "reviews", "{{reviewId}}"]
+            },
+            "description": "Permet au client connecté de modifier sa note ou son commentaire."
+          }
+        },
+        {
+          "name": "Supprimer son propre avis (Client)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "x-utilisateur-id",
+                "value": "{{clientId}}",
+                "type": "text"
+              },
+              {
+                "key": "x-utilisateur-role",
+                "value": "CLIENT",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/reviews/{{reviewId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "reviews", "{{reviewId}}"]
+            },
+            "description": "Supprime définitivement l'avis appartenant au client connecté."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Complaints (Réclamations)",
+      "item": [
+        {
+          "name": "Créer une réclamation (Client)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "x-utilisateur-id",
+                "value": "{{clientId}}",
+                "type": "text"
+              },
+              {
+                "key": "x-utilisateur-role",
+                "value": "CLIENT",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"clientId\": \"{{clientId}}\",\n  \"commandeId\": \"{{commandeId}}\",\n  \"sujet\": \"Produits abîmés à la livraison\",\n  \"description\": \"Une partie des tomates et des fraises était écrasée lors de la réception du colis.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/complaints",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "complaints"]
+            },
+            "description": "Crée une nouvelle réclamation associée à une commande (statut initial OPEN)."
+          }
+        },
+        {
+          "name": "Consulter mes réclamations (Client)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-utilisateur-id",
+                "value": "{{clientId}}",
+                "type": "text"
+              },
+              {
+                "key": "x-utilisateur-role",
+                "value": "CLIENT",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/complaints/mine",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "complaints", "mine"]
+            },
+            "description": "Récupère toutes les réclamations créées par le client connecté."
+          }
+        },
+        {
+          "name": "Consulter toutes les réclamations (Admin / Agriculteur)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-utilisateur-id",
+                "value": "admin-001",
+                "type": "text"
+              },
+              {
+                "key": "x-utilisateur-role",
+                "value": "ADMIN",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/complaints",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "complaints"]
+            },
+            "description": "Consultation globale des réclamations réservée aux administrateurs, service client et agriculteurs."
+          }
+        },
+        {
+          "name": "Consulter une réclamation par son ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-utilisateur-id",
+                "value": "{{clientId}}",
+                "type": "text"
+              },
+              {
+                "key": "x-utilisateur-role",
+                "value": "CLIENT",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/complaints/{{complaintId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "complaints", "{{complaintId}}"]
+            },
+            "description": "Consulter les détails d'une réclamation (accessible par le client propriétaire, l'agriculteur ou l'administrateur)."
+          }
+        },
+        {
+          "name": "Modifier le statut (Agriculteur / Admin) -> IN_PROGRESS",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "x-utilisateur-id",
+                "value": "{{agriculteurId}}",
+                "type": "text"
+              },
+              {
+                "key": "x-utilisateur-role",
+                "value": "AGRICULTEUR",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"statut\": \"IN_PROGRESS\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/complaints/{{complaintId}}/status",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "complaints", "{{complaintId}}", "status"]
+            },
+            "description": "Fait passer la réclamation de OPEN à IN_PROGRESS (ou de IN_PROGRESS à RESOLVED)."
+          }
+        },
+        {
+          "name": "Clôturer la réclamation (Admin / Service Client) -> CLOSED",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "x-utilisateur-id",
+                "value": "admin-001",
+                "type": "text"
+              },
+              {
+                "key": "x-utilisateur-role",
+                "value": "ADMIN",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"statut\": \"CLOSED\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/complaints/{{complaintId}}/status",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "complaints", "{{complaintId}}", "status"]
+            },
+            "description": "Clôture définitivement la réclamation (réservé à ADMIN et SERVICE_CLIENT)."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Complaint Messages (Échanges)",
+      "item": [
+        {
+          "name": "Ajouter un message (Client / Admin / Agriculteur)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "x-utilisateur-id",
+                "value": "{{clientId}}",
+                "type": "text"
+              },
+              {
+                "key": "x-utilisateur-role",
+                "value": "CLIENT",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"auteurId\": \"{{clientId}}\",\n  \"contenu\": \"Bonjour, voici une photo du carton endommagé pour appuyer ma demande.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/complaints/{{complaintId}}/messages",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "complaints", "{{complaintId}}", "messages"]
+            },
+            "description": "Ajoute un message dans le fil de discussion de la réclamation."
+          }
+        },
+        {
+          "name": "Consulter l'historique des échanges d'une réclamation",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-utilisateur-id",
+                "value": "{{clientId}}",
+                "type": "text"
+              },
+              {
+                "key": "x-utilisateur-role",
+                "value": "CLIENT",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/complaints/{{complaintId}}/messages",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "complaints", "{{complaintId}}", "messages"]
+            },
+            "description": "Récupère tous les messages associés à la réclamation triés chronologiquement."
+          }
+        }
+      ]
+    }
+  ]
+}
