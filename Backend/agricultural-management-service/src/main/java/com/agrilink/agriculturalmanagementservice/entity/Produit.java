@@ -37,6 +37,13 @@ public class Produit {
     @Column(nullable = false, updatable = false)
     private LocalDateTime dateCreation;
 
+    // Stockage de l'image sur Cloudinary
+    @Column(name = "image_url", length = 500)
+    private String imageUrl;
+
+    @Column(name = "image_public_id", length = 200)
+    private String imagePublicId;
+
     @PrePersist
     protected void initialiserDateCreation() {
         this.dateCreation = LocalDateTime.now();
