@@ -1,0 +1,308 @@
+<!-- ===== MARKETPLACE TOP INFO BAR ===== -->
+<div class="shop-topbar">
+  <div class="container shop-topbar__inner">
+    <div class="shop-search">
+      <i class="fa fa-search shop-search__icon"></i>
+      <input 
+        type="text" 
+        placeholder="Rechercher un fruit, légume, producteur..."
+        [value]="searchQuery()"
+        (input)="searchQuery.set($any($event.target).value)"
+      >
+      @if (searchQuery()) {
+        <button class="clear-search-btn" (click)="searchQuery.set('')" title="Effacer">×</button>
+      }
+    </div>
+
+    <div class="shop-topbar__contact">
+      <div class="phone-circle">
+        <i class="fa fa-phone-alt"></i>
+      </div>
+      <div class="phone-text">
+        <span class="phone-label">Commandes & Producteurs</span>
+        <span class="phone-number">(234) 109-6666</span>
+      </div>
+    </div>
+
+    <div class="shop-topbar__user-actions">
+      <button class="action-circle" title="Mon Compte">
+        <i class="fa fa-user"></i>
+      </button>
+      <button class="action-circle" title="Favoris">
+        <i class="fa fa-heart"></i>
+      </button>
+      <div class="cart-summary">
+        <div class="action-circle cart-circle">
+          <i class="fa fa-shopping-basket"></i>
+          <span class="cart-count">3</span>
+        </div>
+        <div class="cart-price-info">
+          <span class="cart-label">Votre Panier</span>
+          <span class="cart-amount">1,245.60 DT</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SUB-NAV BAR ===== -->
+<div class="shop-subnav">
+  <div class="container shop-subnav__inner">
+    <div class="category-dropdown-btn">
+      <i class="fa fa-bars"></i>
+      <span>Catégories Produits</span>
+      <i class="fa fa-chevron-down"></i>
+    </div>
+
+    <ul class="shop-subnav__links">
+      <li><a routerLink="/">Accueil</a></li>
+      <li><a routerLink="/marketplace" class="active"><span class="wheat-mark">🌾</span> Marketplace</a></li>
+      <li><a routerLink="/product/orange-maltaise-succulente">Offres Producteurs</a></li>
+      <li><a routerLink="/services">Nos Services</a></li>
+      <li><a routerLink="/contact">Contact</a></li>
+    </ul>
+
+    <a routerLink="/marketplace" class="order-online-btn">
+      <i class="fa fa-shopping-bag"></i>
+      Commander en Ligne Direct Ferme !
+    </a>
+  </div>
+</div>
+
+<!-- ===== HERO BANNER ===== -->
+<section class="shop-hero">
+  <div class="shop-hero__overlay"></div>
+  <div class="container shop-hero__content">
+    <span class="shop-hero__subtitle">Aliments Sains & Naturels Direct Producteur</span>
+    <h1 class="shop-hero__title">MARKETPLACE AGRICOLE</h1>
+    <div class="shop-hero__brush"></div>
+    <div class="shop-hero__breadcrumb">
+      <a routerLink="/">Accueil</a>
+      <span class="sep">→</span>
+      <span class="current">Marketplace &amp; Produits Fermiers</span>
+    </div>
+  </div>
+  <div class="grass-divider-wave"></div>
+</section>
+
+<!-- ===== MAIN CONTENT: SIDEBAR + PRODUCTS GRID ===== -->
+<section class="marketplace-body">
+  <div class="container marketplace-layout">
+
+    <!-- LEFT SIDEBAR FILTER -->
+    <aside class="marketplace-sidebar">
+      <div class="filter-card">
+        <div class="filter-card__header">
+          <div class="filter-card__title-wrap">
+            <i class="fa fa-sliders-h filter-icon"></i>
+            <div>
+              <h3>Filtrer</h3>
+              <p>Trouvez vos produits frais</p>
+            </div>
+          </div>
+          <span class="filter-count-badge">1</span>
+        </div>
+
+        <div class="filter-card__body">
+          <h4 class="category-group-title">CATÉGORIES</h4>
+          <ul class="category-list">
+            @for (cat of categories; track cat.id) {
+              <li 
+                class="category-item" 
+                [class.active]="selectedCategory() === cat.id"
+                (click)="selectCategory(cat.id)"
+              >
+                <div class="cat-left">
+                  <span class="cat-icon">{{ cat.icon }}</span>
+                  <span class="cat-name">{{ cat.label }}</span>
+                </div>
+                <div class="cat-right">
+                  <span class="cat-badge">{{ cat.count }}</span>
+                  <i class="fa fa-chevron-right chevron-icon"></i>
+                </div>
+              </li>
+            }
+          </ul>
+
+          <!-- TOGGLE FILTERS -->
+          <div class="quick-toggles">
+            <h4 class="category-group-title">LABELS &amp; QUALITÉ</h4>
+            <label class="toggle-option">
+              <input 
+                type="checkbox" 
+                [checked]="onlyBio()"
+                (change)="onlyBio.set(!onlyBio())"
+              >
+              <span class="toggle-checkmark"></span>
+              <span class="toggle-label">🌿 100% Bio Certifié</span>
+            </label>
+            <label class="toggle-option">
+              <input 
+                type="checkbox" 
+                [checked]="onlyNonTraite()"
+                (change)="onlyNonTraite.set(!onlyNonTraite())"
+              >
+              <span class="toggle-checkmark"></span>
+              <span class="toggle-label">✨ Non Traité après récolte</span>
+            </label>
+          </div>
+
+          <!-- ACTIVE FILTERS -->
+          <div class="active-filters-section">
+            <h4 class="category-group-title">FILTRES ACTIFS</h4>
+            <div class="chips-container">
+              @if (selectedCategory() !== 'Tous les produits') {
+                <span class="filter-chip">
+                  {{ selectedCategory() }}
+                  <button (click)="removeCategoryFilter()">×</button>
+                </span>
+              }
+              @if (onlyBio()) {
+                <span class="filter-chip">
+                  Bio
+                  <button (click)="onlyBio.set(false)">×</button>
+                </span>
+              }
+              @if (onlyNonTraite()) {
+                <span class="filter-chip">
+                  Non Traité
+                  <button (click)="onlyNonTraite.set(false)">×</button>
+                </span>
+              }
+            </div>
+
+            <button class="clear-all-btn" (click)="clearFilters()">
+              <i class="fa fa-undo"></i> Effacer tous les filtres
+            </button>
+          </div>
+
+          <!-- DIRECT FARMERS PROMO BOX -->
+          <div class="farmers-callout">
+            <div class="callout-icon">🚜</div>
+            <h5>Circuit Court Garanti</h5>
+            <p>Achetez directement aux agriculteurs sans intermédiaire. Chaque produit a des offres de plusieurs fermes locales.</p>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- RIGHT PRODUCTS GRID -->
+    <main class="marketplace-main">
+      
+      <!-- HEADER BAR -->
+      <div class="catalog-header">
+        <div class="catalog-title-wrap">
+          <h2 class="catalog-title">
+            {{ selectedCategory() === 'Tous les produits' ? 'Tous les Produits du Terroir' : selectedCategory() }}
+          </h2>
+          <span class="catalog-subtitle">{{ filteredProducts().length }} produit(s) d'agriculteurs disponibles</span>
+        </div>
+
+        <div class="catalog-controls">
+          <div class="marketplace-notice-pill">
+            <i class="fa fa-info-circle"></i>
+            <span>Prix direct selon l'agriculteur choisi</span>
+          </div>
+
+          <div class="sort-selector">
+            <label for="sort"><i class="fa fa-sort-amount-down"></i> Trier par:</label>
+            <select id="sort" [value]="sortBy()" (change)="sortBy.set($any($event.target).value)">
+              <option value="popular">Plus populaires</option>
+              <option value="offers">Plus d'offres fermières</option>
+              <option value="rating">Mieux notés</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- PRODUCTS GRID (WITHOUT PRICES AS REQUESTED) -->
+      @if (filteredProducts().length > 0) {
+        <div class="products-grid">
+          @for (prod of filteredProducts(); track prod.id) {
+            <div class="product-card">
+              <!-- TOP BADGES -->
+              <div class="product-card__badges">
+                @if (prod.isBio) {
+                  <span class="badge-bio" title="Certifié Agriculture Biologique">
+                    <span class="badge-icon">🌿</span>
+                    <span class="badge-text">bio</span>
+                  </span>
+                }
+                @if (prod.isNonTraite) {
+                  <span class="badge-nontraite" title="Non traité après récolte">
+                    <span class="badge-icon">✓</span>
+                    <span class="badge-text">NON TRAITÉ</span>
+                  </span>
+                }
+              </div>
+
+              <!-- IMAGE CONTAINER -->
+              <div class="product-card__image-container">
+                <a [routerLink]="['/product', prod.id]" class="product-card__img-link">
+                  <img [src]="prod.image" [alt]="prod.name" class="product-card__img" loading="lazy">
+                </a>
+
+                <!-- HOVER QUICK VIEW BUTTON -->
+                <a [routerLink]="['/product', prod.id]" class="btn-quick-view">
+                  <i class="fa fa-eye"></i> Voir le produit
+                </a>
+              </div>
+
+              <!-- CARD BODY (NO PRICE DISPLAYED - FOCUS ON PRODUCT & FARMER OFFERS) -->
+              <div class="product-card__body">
+                <h3 class="product-card__title">
+                  <a [routerLink]="['/product', prod.id]">{{ prod.name }}</a>
+                </h3>
+
+                <span class="product-card__unit">{{ prod.unit }}</span>
+
+                <!-- FARMER OFFERS SUMMARY (WHY THERE IS NO SINGLE PRICE) -->
+                <div class="farmers-offers-indicator">
+                  <div class="farmers-avatars">
+                    @for (offer of prod.offers.slice(0, 3); track offer.id) {
+                      <img 
+                        [src]="offer.farmerAvatar" 
+                        [alt]="offer.farmerName" 
+                        class="mini-avatar"
+                        [title]="offer.farmerName + ' (' + offer.location + ')'"
+                      >
+                    }
+                  </div>
+                  <div class="farmers-info-text">
+                    <span class="farmers-count-text">
+                      <strong>{{ prod.offers.length }} agriculteurs</strong> proposent ce produit
+                    </span>
+                    <span class="farmers-location-text">
+                      {{ prod.offers[0]?.location || 'Producteurs locaux' }}
+                    </span>
+                  </div>
+                </div>
+
+                <!-- ACTION BUTTON: COMPARE / VIEW OFFERS -->
+                <div class="product-card__action">
+                  <a [routerLink]="['/product', prod.id]" class="btn-view-offers">
+                    <span>Voir les offres des agriculteurs</span>
+                    <span class="action-arrow">
+                      <i class="fa fa-arrow-right"></i>
+                    </span>
+                  </a>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      } @else {
+        <div class="empty-state">
+          <div class="empty-icon">🌾</div>
+          <h3>Aucun produit trouvé</h3>
+          <p>Essayez de réinitialiser vos filtres ou de modifier votre recherche.</p>
+          <button class="btn-primary" (click)="clearFilters()">
+            Voir tous les produits
+            <span class="btn-icon"><i class="fa fa-arrow-right"></i></span>
+          </button>
+        </div>
+      }
+
+    </main>
+  </div>
+</section>
