@@ -49,9 +49,9 @@ public class PropositionRecolteServiceImpl implements PropositionRecolteService 
     public List<PropositionRecolteResponse> getAllPropositions(Long annonceId, Long agriculteurId, StatutProposition statut) {
         List<PropositionRecolte> result;
         if (annonceId != null && statut != null) {
-            result = propositionRecolteRepository.findByAnnonceIdAndStatut(annonceId, statut);
+            result = propositionRecolteRepository.findByAnnonce_IdAndStatut(annonceId, statut);
         } else if (annonceId != null) {
-            result = propositionRecolteRepository.findByAnnonceId(annonceId);
+            result = propositionRecolteRepository.findByAnnonce_Id(annonceId);
         } else if (agriculteurId != null) {
             result = propositionRecolteRepository.findByAgriculteurId(agriculteurId);
         } else {
@@ -136,7 +136,7 @@ public class PropositionRecolteServiceImpl implements PropositionRecolteService 
         if (annonce != null && annonce.getBesoin() != null) {
             BesoinClient besoin = annonce.getBesoin();
 
-            List<PropositionRecolte> toutesPropositions = propositionRecolteRepository.findByAnnonceId(annonce.getId());
+            List<PropositionRecolte> toutesPropositions = propositionRecolteRepository.findByAnnonce_Id(annonce.getId());
             BigDecimal sommeQuantiteRecue = toutesPropositions.stream()
                     .map(p -> p.getQuantiteRecue() != null ? p.getQuantiteRecue() : BigDecimal.ZERO)
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
@@ -168,7 +168,7 @@ public class PropositionRecolteServiceImpl implements PropositionRecolteService 
 
     private void recalculerQuantiteAccepteeAnnonce(AnnonceCollecte annonce) {
         if (annonce == null) return;
-        List<PropositionRecolte> propositions = propositionRecolteRepository.findByAnnonceId(annonce.getId());
+        List<PropositionRecolte> propositions = propositionRecolteRepository.findByAnnonce_Id(annonce.getId());
         BigDecimal totalAcceptee = propositions.stream()
                 .filter(p -> p.getStatut() == StatutProposition.ACCEPTEE
                         || p.getStatut() == StatutProposition.ACCEPTEE_PARTIELLEMENT

@@ -32,7 +32,7 @@ public class AnnonceCollecteServiceImpl implements AnnonceCollecteService {
         BesoinClient besoin = besoinClientRepository.findById(request.getBesoinId())
                 .orElseThrow(() -> new ResourceNotFoundException("Besoin client introuvable avec l'identifiant: " + request.getBesoinId()));
 
-        if (annonceCollecteRepository.existsByBesoinId(besoin.getId())) {
+        if (annonceCollecteRepository.existsByBesoin_Id(besoin.getId())) {
             throw new BusinessException("Ce besoin client est déjà pris en charge par une annonce de collecte.");
         }
 

@@ -10,9 +10,9 @@ import java.util.List;
 @Repository
 public interface PropositionRecolteRepository extends JpaRepository<PropositionRecolte, Long> {
 
-    List<PropositionRecolte> findByAnnonceId(Long annonceId);
+    List<PropositionRecolte> findByAnnonce_Id(Long annonceId);
 
     List<PropositionRecolte> findByAgriculteurId(Long agriculteurId);
 
-    List<PropositionRecolte> findByAnnonceIdAndStatut(Long annonceId, StatutProposition statut);
+    List<PropositionRecolte> findByAnnonce_IdAndStatut(Long annonceId, StatutProposition statut);
 }

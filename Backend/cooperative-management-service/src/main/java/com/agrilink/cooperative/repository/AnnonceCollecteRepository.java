@@ -15,7 +15,7 @@ public interface AnnonceCollecteRepository extends JpaRepository<AnnonceCollecte
 
     List<AnnonceCollecte> findByResponsableId(Long responsableId);
 
-    Optional<AnnonceCollecte> findByBesoinId(Long besoinId);
+    Optional<AnnonceCollecte> findByBesoin_Id(Long besoinId);
 
-    boolean existsByBesoinId(Long besoinId);
+    boolean existsByBesoin_Id(Long besoinId);
 }
