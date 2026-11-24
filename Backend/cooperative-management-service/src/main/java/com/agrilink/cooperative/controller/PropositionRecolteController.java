@@ -20,6 +20,18 @@ public class PropositionRecolteController {
     private final PropositionRecolteService propositionRecolteService;
 
     /**
+     * POST /api/propositions/annonce/{annonceId}
+     * Soumettre une proposition de recolte pour une annonce.
+     */
+    @PostMapping("/annonce/{annonceId}")
+    public ResponseEntity<PropositionRecolteResponse> createProposition(
+            @PathVariable Long annonceId,
+            @Valid @RequestBody com.agrilink.cooperative.dto.PropositionRecolteRequest request) {
+        return ResponseEntity.status(org.springframework.http.HttpStatus.CREATED)
+                .body(propositionRecolteService.createProposition(annonceId, request));
+    }
+
+    /**
      * GET /api/propositions
      * Consulter les propositions (filtres optionnels par annonceId, agriculteurId ou statut).
      */

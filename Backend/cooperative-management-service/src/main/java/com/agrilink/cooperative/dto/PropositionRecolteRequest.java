@@ -15,7 +15,6 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 public class PropositionRecolteRequest {
 
-    @NotNull(message = "L'identifiant de l'annonce est obligatoire")
     private Long annonceId;
 
     @NotNull(message = "L'identifiant de l'agriculteur est obligatoire")
