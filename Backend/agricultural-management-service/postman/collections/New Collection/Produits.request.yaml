@@ -1,0 +1,42 @@
+$kind: http-request
+description: ""
+url: http://localhost:8082/api/products
+method: POST
+headers:
+  X-User-Id: 550e8400-e29b-41d4-a716-446655440000
+  X-User-Role: AGRICULTEUR
+body:
+  type: formdata
+  content:
+    - type: file
+      key: image
+      src:
+        - postman-cloud:///1f1e72c2-f2b9-4a40-bf45-7d778dba604f
+      description: ""
+      disabled: false
+    - type: text
+      key: produit.designation
+      value: Tomate
+      description: ""
+      disabled: true
+    - type: text
+      key: produit.description
+      value: Tomate fraîche
+      description: ""
+      disabled: true
+    - type: text
+      key: produit.categorie
+      value: LEGUME
+      description: ""
+      disabled: true
+    - type: text
+      key: produit.creeParAgriculteurId
+      value: 550e8400-e29b-41d4-a716-446655440000
+      description: ""
+      disabled: true
+    - type: text
+      key: produit
+      value: '{"designation":"Tomate","description":"Fraîche","categorie":"LEGUME","creeParAgriculteurId":"550e8400-e29b-41d4-a716-446655440000"}'
+      description: ""
+      disabled: false
+order: 1000

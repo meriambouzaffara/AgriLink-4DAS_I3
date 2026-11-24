@@ -1,0 +1,7 @@
+# Use this workspace to collaborate
+workspace:
+  id: 5c734fa0-c6a3-43ba-bed3-15dc87d313e4
+
+localResources:
+  collections:
+    - ../AgriLink-MS2.postman_collection.json
