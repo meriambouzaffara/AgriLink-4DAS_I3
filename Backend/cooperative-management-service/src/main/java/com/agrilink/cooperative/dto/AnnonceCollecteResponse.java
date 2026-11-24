@@ -1,4 +1,4 @@
-﻿package com.agrilink.cooperative.dto;
+package com.agrilink.cooperative.dto;
 
 import com.agrilink.cooperative.entity.StatutAnnonce;
 import lombok.AllArgsConstructor;
