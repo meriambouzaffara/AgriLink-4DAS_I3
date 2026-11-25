@@ -31,3 +31,7 @@ build/
 
 ### VS Code ###
 .vscode/
+# H2 Database files
+Backend/user-management-service/data/*.mv.db
+Backend/user-management-service/data/*.trace.db
+Backend/user-management-service/data/*.lock.db
