@@ -1,0 +1,115 @@
+### =========================================================================
+### MS5 - COOPERATIVE MANAGEMENT SERVICE (Port 8085)
+### Scenario de test complet de bout en bout
+### =========================================================================
+
+### 1. Creer un Besoin Client
+POST http://localhost:8085/api/besoins
+Content-Type: application/json
+
+{
+  "clientId": 101,
+  "productId": 202,
+  "quantiteDemandee": 100.0,
+  "dateSouhaitee": "2026-12-31",
+  "description": "Besoin urgent de 100 kg pour fin d'annee"
+}
+
+### 2. Lister tous les besoins clients
+GET http://localhost:8085/api/besoins
+Accept: application/json
+
+### 3. Consulter le besoin client cree (ID: 1)
+GET http://localhost:8085/api/besoins/1
+Accept: application/json
+
+### -------------------------------------------------------------------------
+### 4. Creer une Annonce de Collecte pour ce besoin (ID: 1)
+POST http://localhost:8085/api/annonces-collecte
+Content-Type: application/json
+
+{
+  "besoinId": 1,
+  "responsableId": 501,
+  "quantiteObjectif": 100.0,
+  "dateLimite": "2026-12-20",
+  "description": "Appel a collecte aupres des producteurs partenaires"
+}
+
+### 5. Lister toutes les annonces de collecte
+GET http://localhost:8085/api/annonces-collecte
+Accept: application/json
+
+### 6. Consulter l'annonce creee (ID: 1)
+GET http://localhost:8085/api/annonces-collecte/1
+Accept: application/json
+
+### -------------------------------------------------------------------------
+### 7. Agriculteur A soumet une proposition (40 kg) sur l'annonce (ID: 1)
+POST http://localhost:8085/api/annonces-collecte/1/propositions
+Content-Type: application/json
+
+{
+  "annonceId": 1,
+  "agriculteurId": 12,
+  "recolteId": 301,
+  "quantiteProposee": 40.0,
+  "commentaire": "40 kg de bonne qualite"
+}
+
+### 8. Agriculteur B soumet une proposition (60 kg) sur l'annonce (ID: 1)
+POST http://localhost:8085/api/annonces-collecte/1/propositions
+Content-Type: application/json
+
+{
+  "annonceId": 1,
+  "agriculteurId": 15,
+  "recolteId": 302,
+  "quantiteProposee": 60.0,
+  "commentaire": "60 kg disponibles immediatement"
+}
+
+### 9. Lister les propositions de l'annonce 1
+GET http://localhost:8085/api/propositions?annonceId=1
+Accept: application/json
+
+### -------------------------------------------------------------------------
+### 10. Le Responsable valide la proposition 1 (Acceptee: 40 kg)
+PATCH http://localhost:8085/api/propositions/1/decision
+Content-Type: application/json
+
+{
+  "statut": "ACCEPTEE",
+  "quantiteAcceptee": 40.0
+}
+
+### 11. Le Responsable valide la proposition 2 (Acceptee: 60 kg)
+PATCH http://localhost:8085/api/propositions/2/decision
+Content-Type: application/json
+
+{
+  "statut": "ACCEPTEE",
+  "quantiteAcceptee": 30.0
+}
+
+### -------------------------------------------------------------------------
+### 12. Enregistrer la reception effective de la proposition 1 (40 kg recus)
+PATCH http://localhost:8085/api/propositions/1/reception
+Content-Type: application/json
+
+{
+  "quantiteRecue": 40.0
+}
+
+### 13. Enregistrer la reception effective de la proposition 2 (60 kg recus)
+### Regle metier : Le total recu atteint 100 kg -> Le statut du Besoin passe automatiquement a SATISFAIT !
+PATCH http://localhost:8085/api/propositions/2/reception
+Content-Type: application/json
+
+{
+  "quantiteRecue": 30.0
+}
+
+### 14. Verifier que le Besoin Client 1 est maintenant SATISFAIT
+GET http://localhost:8085/api/besoins/1
+Accept: application/json
