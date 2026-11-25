@@ -1,0 +1,338 @@
+/* ===== FARMER HEADER STYLES ===== */
+
+.farmer-hero {
+  position: relative;
+  background: url('https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=1600&q=80') center/cover no-repeat;
+  padding: 105px 0 70px;
+  text-align: center;
+  overflow: hidden;
+}
+
+.farmer-hero__overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(rgba(10, 30, 18, 0.78), rgba(10, 30, 18, 0.78));
+}
+
+.farmer-hero__content {
+  position: relative;
+  z-index: 2;
+}
+
+.farmer-hero__subtitle {
+  color: #f5a623;
+  font-size: 15px;
+  font-style: italic;
+  font-weight: 700;
+  margin-bottom: 8px;
+  display: block;
+}
+
+.farmer-hero__title {
+  color: #ffffff;
+  font-family: 'Josefin Sans', sans-serif;
+  font-size: 38px;
+  font-weight: 900;
+  letter-spacing: 2px;
+  margin: 0 0 10px;
+  text-transform: uppercase;
+}
+
+.farmer-hero__brush {
+  width: 140px;
+  height: 4px;
+  background: #f5a623;
+  margin: 0 auto 16px;
+  border-radius: 2px;
+}
+
+.farmer-hero__breadcrumb {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.8);
+  flex-wrap: wrap;
+}
+
+.farmer-hero__breadcrumb a {
+  color: #ffffff;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.farmer-hero__breadcrumb a:hover {
+  color: #f5a623;
+}
+
+.farmer-hero__breadcrumb .current {
+  color: #f5a623;
+  font-weight: 600;
+}
+
+/* Grass divider */
+.grass-divider-wave {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 25px;
+  background: #f8fbf8;
+  clip-path: polygon(
+    0% 100%, 2% 20%, 4% 80%, 6% 15%, 8% 70%, 10% 25%,
+    12% 80%, 14% 15%, 16% 65%, 18% 30%, 20% 75%,
+    22% 20%, 24% 85%, 26% 10%, 28% 70%, 30% 25%,
+    32% 80%, 34% 15%, 36% 75%, 38% 30%, 40% 85%,
+    42% 15%, 44% 70%, 46% 20%, 48% 80%, 50% 15%,
+    52% 75%, 54% 25%, 56% 85%, 58% 15%, 60% 70%,
+    62% 20%, 64% 80%, 66% 25%, 68% 75%, 70% 15%,
+    72% 85%, 74% 20%, 76% 70%, 78% 30%, 80% 80%,
+    82% 15%, 84% 75%, 86% 25%, 88% 85%, 90% 20%,
+    92% 70%, 94% 30%, 96% 80%, 98% 25%, 100% 70%,
+    100% 100%
+  );
+}
+
+.farmer-header-body {
+  padding-top: 30px;
+}
+
+/* Farmer Profile Card */
+.farmer-profile-card {
+  background: #ffffff;
+  border-radius: 20px;
+  border: 1px solid #e1ebe2;
+  box-shadow: 0 6px 25px rgba(0, 0, 0, 0.04);
+  padding: 24px 30px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.fpc-main {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.fpc-avatar-wrap {
+  position: relative;
+}
+
+.fpc-avatar {
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #1a5c38;
+}
+
+.fpc-online-badge {
+  position: absolute;
+  bottom: 4px;
+  right: 4px;
+  width: 14px;
+  height: 14px;
+  background: #27ae60;
+  border: 2px solid #ffffff;
+  border-radius: 50%;
+}
+
+.fpc-details {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.fpc-name-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.fpc-name {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 800;
+  color: #1a1a1a;
+  font-family: 'Josefin Sans', sans-serif;
+}
+
+.verified-tag {
+  background: #eef7ee;
+  color: #1a5c38;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.fpc-farm-info {
+  font-size: 13px;
+  color: #666;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.farm-name {
+  color: #1a5c38;
+}
+
+.farm-dot {
+  color: #bbb;
+}
+
+.fpc-badges {
+  display: flex;
+  gap: 6px;
+  margin-top: 4px;
+  flex-wrap: wrap;
+}
+
+.cert-pill {
+  background: #f4f8f4;
+  color: #2e7d32;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 12px;
+  border: 1px solid #d4e8d6;
+}
+
+/* Switcher & Actions */
+.fpc-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.profile-switcher {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.profile-switcher label {
+  font-size: 11px;
+  font-weight: 800;
+  color: #888;
+  text-transform: uppercase;
+}
+
+.profile-switcher select {
+  padding: 8px 14px;
+  border-radius: 20px;
+  border: 1.5px solid #d4e0d6;
+  background: #ffffff;
+  font-size: 13px;
+  font-weight: 700;
+  color: #1a5c38;
+  outline: none;
+  cursor: pointer;
+}
+
+.fpc-cta-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.btn-create-prod-header {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-radius: 25px;
+  font-size: 13px;
+  font-weight: 800;
+  background: #f5a623;
+  color: #ffffff;
+  text-decoration: none;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 15px rgba(245, 166, 35, 0.3);
+}
+
+.btn-create-prod-header:hover {
+  background: #d4891a;
+  transform: translateY(-2px);
+}
+
+/* Dashboard Tabs */
+.dashboard-tabs {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 30px;
+  border-bottom: 2px solid #e2ebe3;
+  padding-bottom: 1px;
+  flex-wrap: wrap;
+}
+
+.tab-link {
+  background: transparent;
+  border: none;
+  border-bottom: 3px solid transparent;
+  padding: 12px 20px;
+  font-size: 15px;
+  font-weight: 700;
+  color: #666;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s;
+  margin-bottom: -2px;
+}
+
+.tab-link:hover {
+  color: #1a5c38;
+}
+
+.tab-link.active {
+  color: #1a5c38;
+  border-bottom-color: #1a5c38;
+  font-weight: 800;
+}
+
+.tab-badge {
+  background: #eef7ee;
+  color: #1a5c38;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 20px;
+}
+
+.tab-link.active .tab-badge {
+  background: #1a5c38;
+  color: #ffffff;
+}
+
+.tab-link-highlight {
+  color: #b57400;
+}
+
+.tab-link-highlight.active {
+  color: #b57400;
+  border-bottom-color: #f5a623;
+}
+
+@media (max-width: 768px) {
+  .farmer-profile-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .fpc-actions {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .farmer-hero__title {
+    font-size: 26px;
+  }
+}

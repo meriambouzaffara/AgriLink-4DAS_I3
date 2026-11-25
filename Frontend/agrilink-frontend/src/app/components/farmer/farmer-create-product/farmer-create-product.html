@@ -1,0 +1,393 @@
+<!-- TOAST NOTIFICATION -->
+@if (toastMessage()) {
+  <div class="farmer-toast animate-slide-in">
+    <i class="fa fa-check-circle toast-icon"></i>
+    <span>{{ toastMessage() }}</span>
+  </div>
+}
+
+<app-farmer-header 
+  pageTitle="CRÉER UN NOUVEAU PRODUIT DU TERROIR" 
+  currentPage="Création de Produit" 
+/>
+
+<main class="page-content">
+  <div class="container">
+
+    <div class="create-product-card">
+      <div class="cpc-header">
+        <div class="cpc-title">
+          <i class="fa fa-sparkles"></i>
+          <div>
+            <h2>Création Complète de Produit &amp; Affectation Immédiate</h2>
+            <p>Ajoutez une nouvelle variété au catalogue AgriLink et affectez-lui directement une offre commerciale et/ou une récolte.</p>
+          </div>
+        </div>
+        <a routerLink="/espace-agriculteur" class="btn-back">← Retour Tableau de Bord</a>
+      </div>
+
+      <form class="cpc-form" (ngSubmit)="submitProduct()">
+
+        <!-- ============================================== -->
+        <!-- SECTION 1: FICHE PRODUIT -->
+        <!-- ============================================== -->
+        <div class="form-block">
+          <div class="form-block__title">
+            <span class="step-num">1</span>
+            <h3>Informations Générales du Produit</h3>
+          </div>
+
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label">Nom du Produit *</label>
+              <input 
+                type="text" 
+                class="form-control" 
+                placeholder="Ex: Pêches Rouges de Mornag, Figues de Djebba..."
+                [value]="prodName()"
+                (input)="prodName.set($any($event.target).value)"
+                required
+              >
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Catégorie *</label>
+              <select 
+                class="form-control"
+                [value]="prodCategory()"
+                (change)="prodCategory.set($any($event.target).value)"
+              >
+                <option value="Fruits">Fruits</option>
+                <option value="Legumes">Légumes</option>
+                <option value="Herbes">Herbes Aromatiques</option>
+                <option value="Epicerie">Épicerie Fermière</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-grid-3">
+            <div class="form-group">
+              <label class="form-label">Variété Cultivée</label>
+              <input 
+                type="text" 
+                class="form-control" 
+                placeholder="Ex: Variété Précoce, Hass, Chetoui..."
+                [value]="prodVariety()"
+                (input)="prodVariety.set($any($event.target).value)"
+              >
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Unité de Mesure Principale *</label>
+              <select 
+                class="form-control"
+                [value]="prodUnit()"
+                (change)="prodUnit.set($any($event.target).value)"
+              >
+                <option value="Kg">Kg</option>
+                <option value="Pièce">Pièce</option>
+                <option value="500g">500g</option>
+                <option value="Botte">Botte</option>
+                <option value="Bouteille 1L">Bouteille 1L</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Terroir d'Origine</label>
+              <input 
+                type="text" 
+                class="form-control" 
+                placeholder="Ex: Nabeul, Bizerte..."
+                [value]="prodOrigin()"
+                (input)="prodOrigin.set($any($event.target).value)"
+              >
+            </div>
+          </div>
+
+          <!-- Image & Presets -->
+          <div class="form-group">
+            <label class="form-label">Photo du Produit (URL)</label>
+            <input 
+              type="text" 
+              class="form-control" 
+              [value]="prodImage()"
+              (input)="prodImage.set($any($event.target).value)"
+            >
+          </div>
+
+          <div class="image-preset-picker">
+            <span class="ipp-label">Suggestions de photos agricoles en 1 clic :</span>
+            <div class="ipp-chips">
+              @for (preset of imagePresets; track preset.label) {
+                <button 
+                  type="button" 
+                  class="ipp-chip" 
+                  [class.active]="prodImage() === preset.url"
+                  (click)="prodImage.set(preset.url)"
+                >
+                  {{ preset.label }}
+                </button>
+              }
+            </div>
+          </div>
+
+          <!-- Live Image Preview -->
+          <div class="image-preview-box">
+            <img [src]="prodImage()" alt="Aperçu Produit" class="ipb-img">
+            <div class="ipb-text">
+              <strong>Aperçu du Produit</strong>
+              <span>Ce visuel apparaîtra sur la Marketplace et la fiche produit détaillée.</span>
+            </div>
+          </div>
+
+          <div class="checkbox-row">
+            <label class="custom-checkbox">
+              <input 
+                type="checkbox" 
+                [checked]="prodIsBio()" 
+                (change)="prodIsBio.set(!prodIsBio())"
+              >
+              <span>🌿 Certifié 100% Biologique</span>
+            </label>
+
+            <label class="custom-checkbox">
+              <input 
+                type="checkbox" 
+                [checked]="prodIsNonTraite()" 
+                (change)="prodIsNonTraite.set(!prodIsNonTraite())"
+              >
+              <span>✓ Non Traité après récolte</span>
+            </label>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Description du Produit &amp; Conseil de Dégustation</label>
+            <textarea 
+              class="form-control" 
+              rows="3" 
+              placeholder="Ex: Chair fondante et parfumée, idéal en salade ou jus frais..."
+              [value]="prodDesc()"
+              (input)="prodDesc.set($any($event.target).value)"
+            ></textarea>
+          </div>
+        </div>
+
+        <!-- ============================================== -->
+        <!-- SECTION 2: AFFECTATION COMMERCIALE (OFFRE) -->
+        <!-- ============================================== -->
+        <div class="form-block" [class.form-block-disabled]="!attachOffer()">
+          <div class="form-block__title">
+            <span class="step-num step-offer">2</span>
+            <div class="fbt-text">
+              <h3>Affecter une Offre Commerciale (Marketplace)</h3>
+              <p>Activez cette section pour mettre directement en vente ce produit auprès des consommateurs.</p>
+            </div>
+            <label class="switch-toggle">
+              <input 
+                type="checkbox" 
+                [checked]="attachOffer()" 
+                (change)="attachOffer.set(!attachOffer())"
+              >
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          @if (attachOffer()) {
+            <div class="form-block__content animate-fade">
+              <div class="form-grid-2">
+                <div class="form-group">
+                  <label class="form-label">Votre Prix de Vente (DT / {{ prodUnit() }}) *</label>
+                  <input 
+                    type="number" 
+                    step="0.100" 
+                    class="form-control price-input" 
+                    [value]="offerPrice()"
+                    (input)="offerPrice.set(+$any($event.target).value)"
+                    required
+                  >
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Prix barré / Promo (Optionnel)</label>
+                  <input 
+                    type="number" 
+                    step="0.100" 
+                    class="form-control" 
+                    placeholder="Ex: 3.500"
+                    [value]="offerOriginalPrice() || ''"
+                    (input)="offerOriginalPrice.set($any($event.target).value ? +$any($event.target).value : null)"
+                  >
+                </div>
+              </div>
+
+              <div class="form-grid-2">
+                <div class="form-group">
+                  <label class="form-label">Stock Initial Disponible ({{ prodUnit() }}s) *</label>
+                  <input 
+                    type="number" 
+                    class="form-control" 
+                    [value]="offerStock()"
+                    (input)="offerStock.set(+$any($event.target).value)"
+                    required
+                  >
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Commande Minimale</label>
+                  <input 
+                    type="number" 
+                    class="form-control" 
+                    [value]="offerMinQty()"
+                    (input)="offerMinQty.set(+$any($event.target).value)"
+                  >
+                </div>
+              </div>
+
+              <div class="form-grid-2">
+                <div class="form-group">
+                  <label class="form-label">Date de Récolte / Fraîcheur</label>
+                  <input 
+                    type="text" 
+                    class="form-control" 
+                    [value]="offerHarvestDate()"
+                    (input)="offerHarvestDate.set($any($event.target).value)"
+                  >
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Délai de Livraison Directe</label>
+                  <input 
+                    type="text" 
+                    class="form-control" 
+                    [value]="offerDeliveryTime()"
+                    (input)="offerDeliveryTime.set($any($event.target).value)"
+                  >
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Mot de l'Agriculteur aux Consommateurs</label>
+                <textarea 
+                  class="form-control" 
+                  rows="2" 
+                  [value]="offerFarmerNote()"
+                  (input)="offerFarmerNote.set($any($event.target).value)"
+                ></textarea>
+              </div>
+            </div>
+          }
+        </div>
+
+        <!-- ============================================== -->
+        <!-- SECTION 3: AFFECTATION D'UNE RÉCOLTE DE PARCELLE -->
+        <!-- ============================================== -->
+        <div class="form-block" [class.form-block-disabled]="!attachHarvest()">
+          <div class="form-block__title">
+            <span class="step-num step-harvest">3</span>
+            <div class="fbt-text">
+              <h3>Affecter une Récolte de Parcelle (Traçabilité)</h3>
+              <p>Activez cette section pour enregistrer la parcelle, la quantité récoltée et la date de cueillette.</p>
+            </div>
+            <label class="switch-toggle">
+              <input 
+                type="checkbox" 
+                [checked]="attachHarvest()" 
+                (change)="attachHarvest.set(!attachHarvest())"
+              >
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          @if (attachHarvest()) {
+            <div class="form-block__content animate-fade">
+              <div class="form-grid-2">
+                <div class="form-group">
+                  <label class="form-label">Nom de la Parcelle / Verger / Serre *</label>
+                  <input 
+                    type="text" 
+                    class="form-control" 
+                    placeholder="Ex: Verger Sud, Serre 2, Colline Est..."
+                    [value]="harvestParcel()"
+                    (input)="harvestParcel.set($any($event.target).value)"
+                    required
+                  >
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Date de la Récolte *</label>
+                  <input 
+                    type="date" 
+                    class="form-control" 
+                    [value]="harvestDate()"
+                    (input)="harvestDate.set($any($event.target).value)"
+                    required
+                  >
+                </div>
+              </div>
+
+              <div class="form-grid-2">
+                <div class="form-group">
+                  <label class="form-label">Quantité récoltée ({{ prodUnit() }}s) *</label>
+                  <input 
+                    type="number" 
+                    class="form-control" 
+                    [value]="harvestQty()"
+                    (input)="harvestQty.set(+$any($event.target).value)"
+                    required
+                  >
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">État de la Récolte *</label>
+                  <select 
+                    class="form-control"
+                    [value]="harvestStatus()"
+                    (change)="harvestStatus.set($any($event.target).value)"
+                  >
+                    <option value="Récoltée">Récoltée (Prête en stock)</option>
+                    <option value="En cours">En cours de cueillette</option>
+                    <option value="Planifiée">Planifiée (Prévisionnelle)</option>
+                    <option value="Commercialisée">Commercialisée</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-grid-2">
+                <div class="form-group">
+                  <label class="form-label">Calibre / Qualité</label>
+                  <input 
+                    type="text" 
+                    class="form-control" 
+                    [value]="harvestGrade()"
+                    (input)="harvestGrade.set($any($event.target).value)"
+                  >
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Méthode de Cueillette</label>
+                  <input 
+                    type="text" 
+                    class="form-control" 
+                    [value]="harvestMethod()"
+                    (input)="harvestMethod.set($any($event.target).value)"
+                  >
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+
+        <!-- SUBMIT BAR -->
+        <div class="submit-action-bar">
+          <a routerLink="/espace-agriculteur" class="btn-cancel-large">Annuler</a>
+          <button type="submit" class="btn-submit-large">
+            <i class="fa fa-check-circle"></i>
+            <span>Créer le Produit &amp; Publier les Affectations</span>
+          </button>
+        </div>
+
+      </form>
+    </div>
+
+  </div>
+</main>

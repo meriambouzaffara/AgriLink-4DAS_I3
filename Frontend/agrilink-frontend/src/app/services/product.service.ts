@@ -1,10 +1,112 @@
 import { Injectable, signal } from '@angular/core';
-import { Product, FarmerOffer } from '../models/product.model';
+import { Product, FarmerOffer, Harvest, FarmerProfile } from '../models/product.model';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ProductService {
+  // Current active farmer profile (default: Haj Moncef Jouini)
+  private currentFarmerId = signal<string>('far-10');
+
+  private farmers = signal<FarmerProfile[]>([
+    {
+      id: 'far-10',
+      name: 'Haj Moncef Jouini',
+      farmName: 'Ferme Les Orangers Royaux',
+      avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=120&q=80',
+      location: 'Menzel Bouzelfa, Nabeul',
+      region: 'Nabeul',
+      phone: '+216 72 200 450',
+      rating: 5.0,
+      reviewsCount: 94,
+      bio: 'Producteur passionné d\'agrumes traditionnels depuis 4 décennies au cœur du Cap Bon. Nous pratiquons une agriculture respectueuse de l\'eau et du sol tunisien.',
+      memberSince: 'Mars 2023',
+      certifications: ['Reine de Tunisie Terroir', 'Zéro Résidu Chimique', 'Cueillette Solaire']
+    },
+    {
+      id: 'far-1',
+      name: 'Mabrouk El Falah',
+      farmName: 'Domaine Vert du Cap Bon',
+      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=120&q=80',
+      location: 'Soliman, Nabeul',
+      region: 'Nabeul',
+      phone: '+216 72 350 120',
+      rating: 4.9,
+      reviewsCount: 42,
+      bio: 'Pionnier de la culture de l\'avocat et des fruits sains sans aucun pesticide post-récolte.',
+      memberSince: 'Janvier 2024',
+      certifications: ['Non Traité & Raisonné', 'Circuit Court Vérifié']
+    },
+    {
+      id: 'far-15',
+      name: 'Mondher Zannad',
+      farmName: 'Huilerie Artisanale Zannad',
+      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=120&q=80',
+      location: 'Zaghouan',
+      region: 'Zaghouan',
+      phone: '+216 72 400 890',
+      rating: 5.0,
+      reviewsCount: 88,
+      bio: 'Producteur d\'huile d\'olive extra vierge médaillée d\'or, pressée à froid au pied de la montagne de Zaghouan.',
+      memberSince: 'Février 2023',
+      certifications: ['Médaille d\'Or Terroir', 'Pressage à Froid']
+    }
+  ]);
+
+  // Harvests signal
+  private harvests = signal<Harvest[]>([
+    {
+      id: 'harv-1',
+      farmerId: 'far-10',
+      productId: 'orange-maltaise-succulente',
+      productName: 'Oranges Maltaises de Nabeul',
+      productImage: 'https://images.unsplash.com/photo-1547514701-42782101795e?w=600&q=80',
+      productCategory: 'Fruits',
+      parcelName: 'Verger Sud - Parcelle des Orangers Centenaires',
+      harvestDate: '2026-11-24',
+      quantity: 450,
+      unit: 'Kg',
+      qualityGrade: 'Extra - Calibre 1A (Demi-Sanguine)',
+      method: 'Cueillette manuelle sélective à pleine maturité',
+      status: 'Récoltée',
+      notes: 'Taux de sucre exceptionnel cette saison, pulpe juteuse.',
+      syncedWithStock: true
+    },
+    {
+      id: 'harv-2',
+      farmerId: 'far-10',
+      productId: 'clementine-de-saison',
+      productName: 'Clémentine Douce de Saison',
+      productImage: 'https://images.unsplash.com/photo-1611080626919-7cf5a9dbab5b?w=600&q=80',
+      productCategory: 'Fruits',
+      parcelName: 'Parcelle Les Collines Douces',
+      harvestDate: '2026-11-26',
+      quantity: 300,
+      unit: 'Kg',
+      qualityGrade: 'Premier Choix sans pépins',
+      method: 'Cueillette avec feuilles de garantie fraîcheur',
+      status: 'En cours',
+      notes: 'Cueillette en cours pour les commandes de la marketplace.',
+      syncedWithStock: true
+    },
+    {
+      id: 'harv-3',
+      farmerId: 'far-10',
+      productId: 'citron-bio',
+      productName: 'Citron Bio Frais',
+      productImage: 'https://images.unsplash.com/photo-1533038590840-1cde6e668a91?w=600&q=80',
+      productCategory: 'Fruits',
+      parcelName: 'Verger Ouest - Ruisseau de Beni Khaled',
+      harvestDate: '2026-12-02',
+      quantity: 200,
+      unit: 'Kg',
+      qualityGrade: 'Bio Certifié - Zeste comestible',
+      method: 'Cueillette manuelle douce',
+      status: 'Planifiée',
+      notes: 'Arbres en fin de floraison automnale, récolte d\'hiver.',
+      syncedWithStock: false
+    }
+  ]);
   private products = signal<Product[]>([
     {
       id: 'avocat-calibre-moyen',
@@ -686,5 +788,290 @@ export class ProductService {
 
   getRelatedProducts(currentId: string, limit = 4): Product[] {
     return this.products().filter(p => p.id !== currentId).slice(0, limit);
+  }
+
+  // --- Farmer Profiles ---
+  getCurrentFarmer(): FarmerProfile {
+    const found = this.farmers().find(f => f.id === this.currentFarmerId());
+    return found || this.farmers()[0];
+  }
+
+  getFarmers(): FarmerProfile[] {
+    return this.farmers();
+  }
+
+  setCurrentFarmer(farmerId: string): void {
+    this.currentFarmerId.set(farmerId);
+  }
+
+  // --- Farmer Offers ---
+  getOffersByFarmer(farmerId: string): { product: Product; offer: FarmerOffer }[] {
+    const result: { product: Product; offer: FarmerOffer }[] = [];
+    for (const prod of this.products()) {
+      for (const off of prod.offers) {
+        if (off.farmerId === farmerId) {
+          result.push({ product: prod, offer: off });
+        }
+      }
+    }
+    return result;
+  }
+
+  // Add a new product to catalogue
+  addProduct(newProduct: Product): Product {
+    this.products.update(list => [newProduct, ...list]);
+    return newProduct;
+  }
+
+  // Add offer to an existing product
+  addOfferToProduct(productId: string, offer: FarmerOffer): boolean {
+    let success = false;
+    this.products.update(list =>
+      list.map(prod => {
+        if (prod.id === productId) {
+          success = true;
+          return {
+            ...prod,
+            offers: [offer, ...prod.offers]
+          };
+        }
+        return prod;
+      })
+    );
+    return success;
+  }
+
+  // Update an existing offer
+  updateOffer(productId: string, offerId: string, updatedOffer: Partial<FarmerOffer>): boolean {
+    let success = false;
+    this.products.update(list =>
+      list.map(prod => {
+        if (prod.id === productId) {
+          const updatedOffers = prod.offers.map(off => {
+            if (off.id === offerId) {
+              success = true;
+              return { ...off, ...updatedOffer };
+            }
+            return off;
+          });
+          return { ...prod, offers: updatedOffers };
+        }
+        return prod;
+      })
+    );
+    return success;
+  }
+
+  // Delete an offer
+  deleteOffer(productId: string, offerId: string): boolean {
+    let success = false;
+    this.products.update(list =>
+      list.map(prod => {
+        if (prod.id === productId) {
+          success = true;
+          return {
+            ...prod,
+            offers: prod.offers.filter(off => off.id !== offerId)
+          };
+        }
+        return prod;
+      })
+    );
+    return success;
+  }
+
+  // Atomic creation of a new product AND its offer
+  createProductWithOffer(
+    productData: {
+      name: string;
+      category: 'Fruits' | 'Legumes' | 'Herbes' | 'Epicerie';
+      unit: string;
+      image: string;
+      isBio: boolean;
+      isNonTraite: boolean;
+      shortDescription: string;
+      origin?: string;
+    },
+    offerData: {
+      price: number;
+      originalPrice?: number;
+      availableStock: number;
+      minOrderQuantity?: number;
+      harvestDate: string;
+      certification?: string;
+      deliveryTime?: string;
+      farmerNote?: string;
+    }
+  ): { product: Product; offer: FarmerOffer } {
+    const farmer = this.getCurrentFarmer();
+    const productId = 'prod-' + Date.now();
+    const offerId = 'off-' + Date.now();
+
+    const offer: FarmerOffer = {
+      id: offerId,
+      farmerId: farmer.id,
+      farmerName: farmer.name,
+      farmName: farmer.farmName,
+      farmerAvatar: farmer.avatar,
+      location: farmer.location,
+      region: farmer.region,
+      distanceKm: 25,
+      rating: farmer.rating,
+      reviewsCount: farmer.reviewsCount,
+      price: offerData.price,
+      originalPrice: offerData.originalPrice,
+      unit: productData.unit.replace(/[()]/g, '').trim() || 'Kg',
+      minOrderQuantity: offerData.minOrderQuantity || 1,
+      availableStock: offerData.availableStock,
+      harvestDate: offerData.harvestDate || 'Récolté ce matin',
+      certification: offerData.certification || (productData.isBio ? '100% Bio Certifié' : 'Agriculture Raisonnée'),
+      deliveryTime: offerData.deliveryTime || 'Livraison en 24h',
+      farmerNote: offerData.farmerNote || `Cultivé avec soin à ${farmer.location} par ${farmer.farmName}.`,
+      isBestPrice: true,
+      status: 'Actif'
+    };
+
+    const newProduct: Product = {
+      id: productId,
+      name: productData.name,
+      frenchName: productData.name,
+      category: productData.category,
+      isBio: productData.isBio,
+      isNonTraite: productData.isNonTraite,
+      unit: productData.unit.startsWith('(') ? productData.unit : `(${productData.unit})`,
+      image: productData.image || 'https://images.unsplash.com/photo-1540420773420-3366772f4999?w=600&q=80',
+      gallery: [productData.image || 'https://images.unsplash.com/photo-1540420773420-3366772f4999?w=600&q=80'],
+      sku: 'AGRI-' + Math.floor(1000 + Math.random() * 9000),
+      tags: [productData.category.toUpperCase(), 'FRAIS', 'TERROIR'],
+      shortDescription: productData.shortDescription || 'Produit frais récolté directement sur les parcelles de notre terroir.',
+      fullDescription: productData.shortDescription || 'Produit frais récolté directement sur les parcelles de notre terroir.',
+      additionalInfo: {
+        origin: productData.origin || farmer.location,
+        conservation: 'Conserver dans un endroit frais et aéré',
+        variety: productData.name,
+        packaging: 'Caissette aérée recyclable'
+      },
+      rating: 5.0,
+      reviewsCount: 1,
+      viewersCount: 5,
+      soldLastHours: 1,
+      offers: [offer]
+    };
+
+    this.addProduct(newProduct);
+    return { product: newProduct, offer };
+  }
+
+  // --- Harvests Management ---
+  getHarvestsByFarmer(farmerId: string): Harvest[] {
+    return this.harvests().filter(h => h.farmerId === farmerId);
+  }
+
+  getAllHarvests(): Harvest[] {
+    return this.harvests();
+  }
+
+  addHarvest(harvest: Harvest): void {
+    this.harvests.update(list => [harvest, ...list]);
+  }
+
+  updateHarvest(harvestId: string, updated: Partial<Harvest>): boolean {
+    let success = false;
+    this.harvests.update(list =>
+      list.map(h => {
+        if (h.id === harvestId) {
+          success = true;
+          return { ...h, ...updated };
+        }
+        return h;
+      })
+    );
+    return success;
+  }
+
+  deleteHarvest(harvestId: string): boolean {
+    let success = false;
+    this.harvests.update(list => {
+      const filtered = list.filter(h => h.id !== harvestId);
+      if (filtered.length !== list.length) success = true;
+      return filtered;
+    });
+    return success;
+  }
+
+  // Create product with harvest
+  createProductWithHarvest(
+    productData: {
+      name: string;
+      category: 'Fruits' | 'Legumes' | 'Herbes' | 'Epicerie';
+      unit: string;
+      image: string;
+      isBio: boolean;
+      isNonTraite: boolean;
+      shortDescription: string;
+      origin?: string;
+    },
+    harvestData: {
+      parcelName: string;
+      harvestDate: string;
+      quantity: number;
+      qualityGrade: string;
+      method: string;
+      status: 'Planifiée' | 'En cours' | 'Récoltée' | 'Commercialisée';
+      notes?: string;
+    }
+  ): { product: Product; harvest: Harvest } {
+    const farmer = this.getCurrentFarmer();
+    const productId = 'prod-' + Date.now();
+    const harvestId = 'harv-' + Date.now();
+
+    const newProduct: Product = {
+      id: productId,
+      name: productData.name,
+      frenchName: productData.name,
+      category: productData.category,
+      isBio: productData.isBio,
+      isNonTraite: productData.isNonTraite,
+      unit: productData.unit.startsWith('(') ? productData.unit : `(${productData.unit})`,
+      image: productData.image || 'https://images.unsplash.com/photo-1540420773420-3366772f4999?w=600&q=80',
+      gallery: [productData.image || 'https://images.unsplash.com/photo-1540420773420-3366772f4999?w=600&q=80'],
+      sku: 'AGRI-' + Math.floor(1000 + Math.random() * 9000),
+      tags: [productData.category.toUpperCase(), 'RÉCOLTE', 'TERROIR'],
+      shortDescription: productData.shortDescription || 'Produit frais récolté sur nos parcelles.',
+      fullDescription: productData.shortDescription || 'Produit frais récolté sur nos parcelles.',
+      additionalInfo: {
+        origin: productData.origin || farmer.location,
+        conservation: 'Conserver dans un endroit frais et aéré',
+        variety: productData.name,
+        packaging: 'Caisse fermière recyclable'
+      },
+      rating: 5.0,
+      reviewsCount: 0,
+      viewersCount: 2,
+      soldLastHours: 0,
+      offers: []
+    };
+
+    const harvest: Harvest = {
+      id: harvestId,
+      farmerId: farmer.id,
+      productId: newProduct.id,
+      productName: newProduct.name,
+      productImage: newProduct.image,
+      productCategory: newProduct.category,
+      parcelName: harvestData.parcelName,
+      harvestDate: harvestData.harvestDate,
+      quantity: harvestData.quantity,
+      unit: productData.unit.replace(/[()]/g, '').trim() || 'Kg',
+      qualityGrade: harvestData.qualityGrade,
+      method: harvestData.method,
+      status: harvestData.status,
+      notes: harvestData.notes,
+      syncedWithStock: false
+    };
+
+    this.addProduct(newProduct);
+    this.addHarvest(harvest);
+    return { product: newProduct, harvest };
   }
 }
