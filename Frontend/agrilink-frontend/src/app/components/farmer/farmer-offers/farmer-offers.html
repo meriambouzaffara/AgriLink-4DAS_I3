@@ -1,0 +1,466 @@
+<!-- TOAST NOTIFICATION -->
+@if (toastMessage()) {
+  <div class="farmer-toast animate-slide-in">
+    <i class="fa fa-check-circle toast-icon"></i>
+    <span>{{ toastMessage() }}</span>
+  </div>
+}
+
+<app-farmer-header 
+  pageTitle="MES OFFRES COMMERCIALES" 
+  currentPage="Gestion des Offres" 
+/>
+
+<main class="page-content">
+  <div class="container">
+
+    <!-- TOOLBAR -->
+    <div class="tab-toolbar">
+      <div class="toolbar-left">
+        <div class="search-box">
+          <i class="fa fa-search"></i>
+          <input 
+            type="text" 
+            placeholder="Rechercher par produit, label..."
+            [value]="searchTerm()"
+            (input)="searchTerm.set($any($event.target).value)"
+          >
+        </div>
+
+        <div class="filter-dropdown-wrap">
+          <label><i class="fa fa-filter"></i> Statut :</label>
+          <select [value]="statusFilter()" (change)="statusFilter.set($any($event.target).value)">
+            <option value="Tous">Tous</option>
+            <option value="Actif">Actif</option>
+            <option value="En rupture">En rupture</option>
+            <option value="Brouillon">Brouillon</option>
+          </select>
+        </div>
+
+        <span class="toolbar-count">{{ filteredOffers().length }} offre(s)</span>
+      </div>
+
+      <div class="toolbar-right">
+        <button class="btn-primary-add" (click)="openCreateModal()">
+          <i class="fa fa-plus-circle"></i>
+          <span>Publier une Offre (Existant ou Nouveau)</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- CALLOUT BANNER -->
+    <div class="feature-banner">
+      <div class="fb-icon">💡</div>
+      <div class="fb-text">
+        <strong>Produit introuvable dans le catalogue ?</strong>
+        <span>Lors de la création de l'offre, choisissez l'option <em>« ✨ Créer un produit »</em> pour ajouter automatiquement votre variété au catalogue et y attacher votre tarif direct producteur !</span>
+      </div>
+      <a routerLink="/espace-agriculteur/nouveau-produit" class="btn-banner-link">
+        Page Dédiée Nouveau Produit →
+      </a>
+    </div>
+
+    <!-- TABLE -->
+    @if (filteredOffers().length > 0) {
+      <div class="table-responsive-card">
+        <table class="farmer-data-table">
+          <thead>
+            <tr>
+              <th>Produit &amp; Catégorie</th>
+              <th>Votre Prix de Vente</th>
+              <th>Stock Disponible</th>
+              <th>Récolte &amp; Fraîcheur</th>
+              <th>Certification</th>
+              <th>Statut</th>
+              <th class="text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (item of filteredOffers(); track item.offer.id) {
+              <tr>
+                <!-- PRODUCT -->
+                <td>
+                  <div class="td-product-cell">
+                    <img [src]="item.product.image" [alt]="item.product.name" class="td-prod-thumb">
+                    <div>
+                      <strong class="td-prod-name">{{ item.product.name }}</strong>
+                      <span class="td-prod-cat">{{ item.product.category }} • {{ item.product.unit }}</span>
+                    </div>
+                  </div>
+                </td>
+
+                <!-- PRICE -->
+                <td>
+                  <div class="td-price-cell">
+                    <strong class="td-price-main">{{ item.offer.price.toFixed(3) }} DT</strong>
+                    @if (item.offer.originalPrice) {
+                      <span class="td-price-old">{{ item.offer.originalPrice.toFixed(3) }} DT</span>
+                    }
+                  </div>
+                </td>
+
+                <!-- STOCK -->
+                <td>
+                  <div class="td-stock-cell">
+                    <strong>{{ item.offer.availableStock }} {{ item.offer.unit }}s</strong>
+                    <div class="stock-progress-bar">
+                      <div 
+                        class="stock-bar-fill" 
+                        [style.width]="(item.offer.availableStock > 200 ? 100 : (item.offer.availableStock / 2)) + '%'"
+                      ></div>
+                    </div>
+                  </div>
+                </td>
+
+                <!-- HARVEST DATE -->
+                <td>
+                  <span class="td-text-muted">{{ item.offer.harvestDate }}</span>
+                </td>
+
+                <!-- CERTIFICATION -->
+                <td>
+                  <span class="cert-chip">{{ item.offer.certification }}</span>
+                </td>
+
+                <!-- STATUS -->
+                <td>
+                  <span 
+                    class="badge-pill" 
+                    [class.badge-active]="item.offer.status !== 'En rupture'"
+                    [class.badge-out]="item.offer.status === 'En rupture'"
+                  >
+                    {{ item.offer.status || 'Actif' }}
+                  </span>
+                </td>
+
+                <!-- ACTIONS -->
+                <td class="text-right">
+                  <div class="table-action-btns">
+                    <a 
+                      [routerLink]="['/product', item.product.id]" 
+                      class="action-btn-icon view-btn" 
+                      title="Voir sur la Marketplace"
+                    >
+                      <i class="fa fa-eye"></i>
+                    </a>
+                    <button 
+                      class="action-btn-icon edit-btn" 
+                      (click)="openEditModal(item)"
+                      title="Modifier cette offre"
+                    >
+                      <i class="fa fa-pen"></i>
+                    </button>
+                    <button 
+                      class="action-btn-icon delete-btn" 
+                      (click)="deleteOffer(item.product.id, item.offer.id)"
+                      title="Supprimer cette offre"
+                    >
+                      <i class="fa fa-trash"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    } @else {
+      <div class="empty-state-box">
+        <div class="empty-icon">🌾</div>
+        <h3>Aucune offre trouvée</h3>
+        <p>Commencez à vendre vos récoltes directement sur la Marketplace en publiant une offre.</p>
+        <button class="btn-primary-add" (click)="openCreateModal()">
+          <i class="fa fa-plus-circle"></i> Créer ma première offre
+        </button>
+      </div>
+    }
+
+  </div>
+</main>
+
+<!-- ======================================================== -->
+<!-- MODAL FORMULAIRE OFFRE -->
+<!-- ======================================================== -->
+@if (showModal()) {
+  <div class="modal-overlay animate-fade">
+    <div class="modal-card animate-scale-up">
+
+      <div class="modal-header">
+        <div class="mh-title">
+          <i class="fa fa-tags"></i>
+          <h3>{{ modalMode() === 'create' ? 'Publier une Offre de Vente' : 'Modifier votre Offre' }}</h3>
+        </div>
+        <button class="modal-close-btn" (click)="showModal.set(false)">×</button>
+      </div>
+
+      <div class="modal-body">
+
+        @if (modalMode() === 'create') {
+          <div class="product-mode-selector">
+            <button 
+              type="button"
+              class="pms-btn" 
+              [class.active]="productMode() === 'existing'"
+              (click)="productMode.set('existing')"
+            >
+              <i class="fa fa-check-circle"></i>
+              <span>Choisir un produit du catalogue</span>
+            </button>
+
+            <button 
+              type="button"
+              class="pms-btn new-prod-highlight" 
+              [class.active]="productMode() === 'new'"
+              (click)="productMode.set('new')"
+            >
+              <i class="fa fa-plus-circle"></i>
+              <span>✨ Le produit n'existe pas : Créer un produit</span>
+            </button>
+          </div>
+        }
+
+        <!-- OPTION A: EXISTANT -->
+        @if (productMode() === 'existing') {
+          <div class="form-section-box">
+            <label class="form-label" for="offer-prod-select">
+              <i class="fa fa-box-open"></i> Sélectionner le produit de votre offre :
+            </label>
+            <select 
+              id="offer-prod-select" 
+              class="form-control"
+              [value]="selectedProductId()" 
+              (change)="selectedProductId.set($any($event.target).value)"
+            >
+              @for (p of allProducts(); track p.id) {
+                <option [value]="p.id">{{ p.name }} ({{ p.category }} - {{ p.unit }})</option>
+              }
+            </select>
+          </div>
+        }
+
+        <!-- OPTION B: CRÉER NOUVEAU PRODUIT -->
+        @if (productMode() === 'new') {
+          <div class="form-section-box new-product-box">
+            <div class="npb-header">
+              <i class="fa fa-sparkles"></i>
+              <h4>Nouveau Produit à créer dans le Catalogue</h4>
+            </div>
+
+            <div class="form-grid-2">
+              <div class="form-group">
+                <label class="form-label">Nom du Produit *</label>
+                <input 
+                  type="text" 
+                  class="form-control" 
+                  placeholder="Ex: Pêches Rouges de Mornag..."
+                  [value]="newProdName()"
+                  (input)="newProdName.set($any($event.target).value)"
+                  required
+                >
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Catégorie *</label>
+                <select 
+                  class="form-control"
+                  [value]="newProdCategory()"
+                  (change)="newProdCategory.set($any($event.target).value)"
+                >
+                  <option value="Fruits">Fruits</option>
+                  <option value="Legumes">Légumes</option>
+                  <option value="Herbes">Herbes Aromatiques</option>
+                  <option value="Epicerie">Épicerie Fermière</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-grid-2">
+              <div class="form-group">
+                <label class="form-label">Unité de vente *</label>
+                <select 
+                  class="form-control"
+                  [value]="newProdUnit()"
+                  (change)="newProdUnit.set($any($event.target).value)"
+                >
+                  <option value="Kg">Kg</option>
+                  <option value="Pièce">Pièce</option>
+                  <option value="500g">500g</option>
+                  <option value="Botte">Botte</option>
+                  <option value="Bouteille 1L">Bouteille 1L</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Photo du produit (URL)</label>
+                <input 
+                  type="text" 
+                  class="form-control" 
+                  [value]="newProdImage()"
+                  (input)="newProdImage.set($any($event.target).value)"
+                >
+              </div>
+            </div>
+
+            <div class="image-preset-picker">
+              <span class="ipp-label">Suggestions rapides :</span>
+              <div class="ipp-chips">
+                @for (preset of imagePresets; track preset.label) {
+                  <button type="button" class="ipp-chip" (click)="newProdImage.set(preset.url)">
+                    {{ preset.label }}
+                  </button>
+                }
+              </div>
+            </div>
+
+            <div class="checkbox-row">
+              <label class="custom-checkbox">
+                <input type="checkbox" [checked]="newProdIsBio()" (change)="newProdIsBio.set(!newProdIsBio())">
+                <span>🌿 Certifié Biologique</span>
+              </label>
+              <label class="custom-checkbox">
+                <input type="checkbox" [checked]="newProdIsNonTraite()" (change)="newProdIsNonTraite.set(!newProdIsNonTraite())">
+                <span>✓ Non Traité post-récolte</span>
+              </label>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Description Courte</label>
+              <textarea 
+                class="form-control" 
+                rows="2" 
+                placeholder="Ex: Récolté à maturité, goût sucré et chair juteuse..."
+                [value]="newProdDesc()"
+                (input)="newProdDesc.set($any($event.target).value)"
+              ></textarea>
+            </div>
+          </div>
+        }
+
+        <!-- DETAILS DE L'OFFRE -->
+        <div class="offer-details-header">
+          <h4>Votre Offre &amp; Tarification</h4>
+        </div>
+
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label class="form-label">Votre Prix de Vente (DT) *</label>
+            <input 
+              type="number" 
+              step="0.100" 
+              class="form-control price-input" 
+              [value]="offerPrice()"
+              (input)="offerPrice.set(+$any($event.target).value)"
+              required
+            >
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Prix barré / Promo (Optionnel)</label>
+            <input 
+              type="number" 
+              step="0.100" 
+              class="form-control" 
+              placeholder="Ex: 3.200"
+              [value]="offerOriginalPrice() || ''"
+              (input)="offerOriginalPrice.set($any($event.target).value ? +$any($event.target).value : null)"
+            >
+          </div>
+        </div>
+
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label class="form-label">Stock Disponible (Kg / Unités) *</label>
+            <input 
+              type="number" 
+              class="form-control" 
+              [value]="offerStock()"
+              (input)="offerStock.set(+$any($event.target).value)"
+              required
+            >
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Commande Minimale</label>
+            <input 
+              type="number" 
+              class="form-control" 
+              [value]="offerMinQty()"
+              (input)="offerMinQty.set(+$any($event.target).value)"
+            >
+          </div>
+        </div>
+
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label class="form-label">Date &amp; Fraîcheur de Récolte</label>
+            <input 
+              type="text" 
+              class="form-control" 
+              placeholder="Ex: Récolté ce matin à l'aube"
+              [value]="offerHarvestDate()"
+              (input)="offerHarvestDate.set($any($event.target).value)"
+            >
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Délai de Livraison</label>
+            <input 
+              type="text" 
+              class="form-control" 
+              placeholder="Ex: Livraison sous 24h"
+              [value]="offerDeliveryTime()"
+              (input)="offerDeliveryTime.set($any($event.target).value)"
+            >
+          </div>
+        </div>
+
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label class="form-label">Label &amp; Certification</label>
+            <input 
+              type="text" 
+              class="form-control" 
+              placeholder="Ex: 100% Bio Certifié Ecocert"
+              [value]="offerCertification()"
+              (input)="offerCertification.set($any($event.target).value)"
+            >
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Statut</label>
+            <select 
+              class="form-control"
+              [value]="offerStatus()"
+              (change)="offerStatus.set($any($event.target).value)"
+            >
+              <option value="Actif">Actif (En ligne)</option>
+              <option value="En rupture">En rupture temporaire</option>
+              <option value="Brouillon">Brouillon</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Message personnel aux consommateurs</label>
+          <textarea 
+            class="form-control" 
+            rows="2" 
+            placeholder="Ex: Cueillis avec soin sans intermédiaire au cœur du terroir..."
+            [value]="offerFarmerNote()"
+            (input)="offerFarmerNote.set($any($event.target).value)"
+          ></textarea>
+        </div>
+
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn-cancel" (click)="showModal.set(false)">Annuler</button>
+        <button type="button" class="btn-confirm" (click)="saveOffer()">
+          <i class="fa fa-check"></i>
+          <span>{{ modalMode() === 'create' ? 'Publier cette Offre' : 'Enregistrer' }}</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+}

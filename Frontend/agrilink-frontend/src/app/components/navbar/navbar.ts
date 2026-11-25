@@ -20,6 +20,7 @@ export class Navbar {
   navLinks = [
     { label: 'Accueil', href: '/' },
     { label: 'Marketplace', href: '/marketplace' },
+    { label: 'Espace Agriculteur', href: '/espace-agriculteur', isFarmer: true },
     { label: 'Offres Producteurs', href: '/product/orange-maltaise-succulente' },
     { label: 'Services', href: '/#services' },
     { label: 'Contact', href: '/#contact' },

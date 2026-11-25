@@ -56,6 +56,18 @@
 .navbar__links li a.active {
   color: #f5a623;
 }
+.navbar__links li a.nav-farmer-link {
+  background: rgba(245, 166, 35, 0.18);
+  border: 1px solid rgba(245, 166, 35, 0.4);
+}
+.navbar.scrolled .navbar__links li a.nav-farmer-link {
+  background: #fdf6ea;
+  border-color: #f9d89b;
+  color: #b57400;
+}
+.nav-tractor-icon {
+  font-size: 14px;
+}
 .navbar__links li a:hover {
   color: #f5a623;
   background: rgba(255, 255, 255, 0.1);

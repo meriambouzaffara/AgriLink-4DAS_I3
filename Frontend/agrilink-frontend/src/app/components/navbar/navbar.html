@@ -14,7 +14,11 @@
               [routerLink]="link.href" 
               routerLinkActive="active" 
               [routerLinkActiveOptions]="{ exact: link.href === '/' }"
+              [class.nav-farmer-link]="link.isFarmer"
             >
+              @if (link.isFarmer) {
+                <span class="nav-tractor-icon">🚜</span>
+              }
               {{ link.label }}
             </a>
           </li>

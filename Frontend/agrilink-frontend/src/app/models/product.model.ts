@@ -22,6 +22,40 @@ export interface FarmerOffer {
   isEcoFriendly?: boolean;
   isLocalFavorite?: boolean;
   phone?: string;
+  status?: 'Actif' | 'En rupture' | 'Brouillon';
+}
+
+export interface Harvest {
+  id: string;
+  farmerId: string;
+  productId: string;
+  productName: string;
+  productImage: string;
+  productCategory: string;
+  parcelName: string; // Ex: Parcelle Est, Verger Vallée, Serre 2
+  harvestDate: string;
+  quantity: number;
+  unit: string;
+  qualityGrade: string; // Ex: Extra, Premier Choix, Calibre 1
+  method: string; // Ex: Cueillette manuelle, À pleine maturité
+  status: 'Planifiée' | 'En cours' | 'Récoltée' | 'Commercialisée';
+  notes?: string;
+  syncedWithStock?: boolean;
+}
+
+export interface FarmerProfile {
+  id: string;
+  name: string;
+  farmName: string;
+  avatar: string;
+  location: string;
+  region: string;
+  phone: string;
+  rating: number;
+  reviewsCount: number;
+  bio: string;
+  memberSince: string;
+  certifications: string[];
 }
 
 export interface Product {

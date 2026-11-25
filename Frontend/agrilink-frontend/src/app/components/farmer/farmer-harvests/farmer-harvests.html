@@ -1,0 +1,384 @@
+<!-- TOAST NOTIFICATION -->
+@if (toastMessage()) {
+  <div class="farmer-toast animate-slide-in">
+    <i class="fa fa-check-circle toast-icon"></i>
+    <span>{{ toastMessage() }}</span>
+  </div>
+}
+
+<app-farmer-header 
+  pageTitle="GESTION DES RÉCOLTES &amp; PARCELLES" 
+  currentPage="Mes Récoltes" 
+/>
+
+<main class="page-content">
+  <div class="container">
+
+    <!-- TOOLBAR -->
+    <div class="tab-toolbar">
+      <div class="toolbar-left">
+        <div class="status-filters">
+          <label><i class="fa fa-filter"></i> Filtrer par état :</label>
+          <select 
+            [value]="statusFilter()" 
+            (change)="statusFilter.set($any($event.target).value)"
+          >
+            <option value="Tous">Tous les statuts</option>
+            <option value="Planifiée">Planifiée</option>
+            <option value="En cours">En cours</option>
+            <option value="Récoltée">Récoltée</option>
+            <option value="Commercialisée">Commercialisée</option>
+          </select>
+        </div>
+        <span class="toolbar-count">{{ filteredHarvests().length }} récolte(s) enregistrée(s)</span>
+      </div>
+
+      <div class="toolbar-right">
+        <button class="btn-primary-add" (click)="openCreateModal()">
+          <i class="fa fa-seedling"></i>
+          <span>Déclarer une Récolte (Existant ou Nouveau)</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- CALLOUT BANNER -->
+    <div class="feature-banner harvest-banner">
+      <div class="fb-icon">🚜</div>
+      <div class="fb-text">
+        <strong>Enregistrez la récolte d'une nouvelle variété</strong>
+        <span>Si vous récoltez un fruit, légume ou herbe qui n'est pas encore dans le catalogue, sélectionnez <em>« ✨ Créer pour cette récolte »</em> pour ajouter la variété immédiatement !</span>
+      </div>
+      <a routerLink="/espace-agriculteur/nouveau-produit" class="btn-banner-link">
+        Créer un Nouveau Produit →
+      </a>
+    </div>
+
+    <!-- HARVEST CARDS GRID -->
+    @if (filteredHarvests().length > 0) {
+      <div class="harvests-cards-grid">
+        @for (h of filteredHarvests(); track h.id) {
+          <div class="harvest-card" [class]="'border-status-' + h.status.toLowerCase()">
+            
+            <!-- TOP HEADER -->
+            <div class="harvest-card__top">
+              <span class="badge-status-lg" [class]="'badge-' + h.status.toLowerCase()">
+                {{ h.status }}
+              </span>
+              <span class="harvest-date-badge">
+                <i class="fa fa-calendar-alt"></i> {{ h.harvestDate }}
+              </span>
+            </div>
+
+            <!-- PRODUCT INFO -->
+            <div class="harvest-card__product">
+              <img [src]="h.productImage" [alt]="h.productName" class="hc-product-img">
+              <div>
+                <h3 class="hc-product-name">{{ h.productName }}</h3>
+                <span class="hc-category-pill">{{ h.productCategory }}</span>
+              </div>
+            </div>
+
+            <!-- SPECS -->
+            <div class="harvest-card__specs">
+              <div class="spec-item">
+                <span class="si-label"><i class="fa fa-map-marked-alt"></i> Parcelle / Lieu :</span>
+                <strong class="si-val">{{ h.parcelName }}</strong>
+              </div>
+              <div class="spec-item">
+                <span class="si-label"><i class="fa fa-weight-hanging"></i> Quantité :</span>
+                <strong class="si-val highlight-qty">{{ h.quantity | number }} {{ h.unit }}</strong>
+              </div>
+              <div class="spec-item">
+                <span class="si-label"><i class="fa fa-award"></i> Calibre &amp; Qualité :</span>
+                <span class="si-val">{{ h.qualityGrade }}</span>
+              </div>
+              <div class="spec-item">
+                <span class="si-label"><i class="fa fa-hand-holding-heart"></i> Méthode :</span>
+                <span class="si-val">{{ h.method }}</span>
+              </div>
+              @if (h.notes) {
+                <div class="spec-item notes-item">
+                  <span class="si-label"><i class="fa fa-sticky-note"></i> Note :</span>
+                  <span class="si-val italic">« {{ h.notes }} »</span>
+                </div>
+              }
+            </div>
+
+            <!-- FOOTER ACTIONS -->
+            <div class="harvest-card__footer">
+              <button 
+                class="btn-convert-offer" 
+                (click)="convertHarvestToOffer(h)"
+                title="Mettre en vente cette récolte sur la Marketplace"
+              >
+                <i class="fa fa-store"></i>
+                <span>Mettre en Offre de Vente</span>
+              </button>
+
+              <div class="hc-sub-actions">
+                <button class="action-btn-icon edit-btn" (click)="openEditModal(h)" title="Modifier la récolte">
+                  <i class="fa fa-pen"></i>
+                </button>
+                <button class="action-btn-icon delete-btn" (click)="deleteHarvest(h.id)" title="Supprimer la récolte">
+                  <i class="fa fa-trash"></i>
+                </button>
+              </div>
+            </div>
+
+          </div>
+        }
+      </div>
+    } @else {
+      <div class="empty-state-box">
+        <div class="empty-icon">🚜</div>
+        <h3>Aucune récolte enregistrée</h3>
+        <p>Planifiez ou déclarez vos cueillettes pour suivre la traçabilité de vos parcelles.</p>
+        <button class="btn-primary-add" (click)="openCreateModal()">
+          <i class="fa fa-seedling"></i> Déclarer une récolte
+        </button>
+      </div>
+    }
+
+  </div>
+</main>
+
+<!-- ======================================================== -->
+<!-- MODAL DECLARATION RECOLTE -->
+<!-- ======================================================== -->
+@if (showModal()) {
+  <div class="modal-overlay animate-fade">
+    <div class="modal-card animate-scale-up">
+
+      <div class="modal-header">
+        <div class="mh-title">
+          <i class="fa fa-tractor"></i>
+          <h3>{{ modalMode() === 'create' ? 'Déclarer une Nouvelle Récolte' : 'Modifier la Récolte' }}</h3>
+        </div>
+        <button class="modal-close-btn" (click)="showModal.set(false)">×</button>
+      </div>
+
+      <div class="modal-body">
+
+        @if (modalMode() === 'create') {
+          <div class="product-mode-selector">
+            <button 
+              type="button"
+              class="pms-btn" 
+              [class.active]="productMode() === 'existing'"
+              (click)="productMode.set('existing')"
+            >
+              <i class="fa fa-check-circle"></i>
+              <span>Produit existant du catalogue</span>
+            </button>
+
+            <button 
+              type="button"
+              class="pms-btn new-prod-highlight" 
+              [class.active]="productMode() === 'new'"
+              (click)="productMode.set('new')"
+            >
+              <i class="fa fa-seedling"></i>
+              <span>✨ Le produit n'existe pas : Créer pour cette récolte</span>
+            </button>
+          </div>
+        }
+
+        <!-- OPTION A: EXISTANT -->
+        @if (productMode() === 'existing') {
+          <div class="form-section-box">
+            <label class="form-label" for="harvest-prod-select">
+              <i class="fa fa-box-open"></i> Produit récolté :
+            </label>
+            <select 
+              id="harvest-prod-select" 
+              class="form-control"
+              [value]="selectedProductId()" 
+              (change)="selectedProductId.set($any($event.target).value)"
+            >
+              @for (p of allProducts(); track p.id) {
+                <option [value]="p.id">{{ p.name }} ({{ p.category }})</option>
+              }
+            </select>
+          </div>
+        }
+
+        <!-- OPTION B: NOUVEAU PRODUIT -->
+        @if (productMode() === 'new') {
+          <div class="form-section-box new-product-box">
+            <div class="npb-header">
+              <i class="fa fa-seedling"></i>
+              <h4>Nouveau Produit à créer et lier à cette Récolte</h4>
+            </div>
+
+            <div class="form-grid-2">
+              <div class="form-group">
+                <label class="form-label">Nom du Produit récolté *</label>
+                <input 
+                  type="text" 
+                  class="form-control" 
+                  placeholder="Ex: Clémentine de Saison Nabeul..."
+                  [value]="newProdName()"
+                  (input)="newProdName.set($any($event.target).value)"
+                  required
+                >
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Catégorie *</label>
+                <select 
+                  class="form-control"
+                  [value]="newProdCategory()"
+                  (change)="newProdCategory.set($any($event.target).value)"
+                >
+                  <option value="Fruits">Fruits</option>
+                  <option value="Legumes">Légumes</option>
+                  <option value="Herbes">Herbes Aromatiques</option>
+                  <option value="Epicerie">Épicerie Fermière</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-grid-2">
+              <div class="form-group">
+                <label class="form-label">Unité de mesure *</label>
+                <select 
+                  class="form-control"
+                  [value]="newProdUnit()"
+                  (change)="newProdUnit.set($any($event.target).value)"
+                >
+                  <option value="Kg">Kg</option>
+                  <option value="Pièce">Pièce</option>
+                  <option value="500g">500g</option>
+                  <option value="Caisse">Caisse</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Image illustrative (URL)</label>
+                <input 
+                  type="text" 
+                  class="form-control" 
+                  [value]="newProdImage()"
+                  (input)="newProdImage.set($any($event.target).value)"
+                >
+              </div>
+            </div>
+          </div>
+        }
+
+        <!-- DETAILS DE LA RECOLTE -->
+        <div class="offer-details-header">
+          <h4>Détails de la Récolte &amp; Parcelle</h4>
+        </div>
+
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label class="form-label">Parcelle / Lieu de Cueillette *</label>
+            <input 
+              type="text" 
+              class="form-control" 
+              placeholder="Ex: Verger Ouest, Serre 3..."
+              [value]="harvestParcel()"
+              (input)="harvestParcel.set($any($event.target).value)"
+              required
+            >
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Date de la Récolte *</label>
+            <input 
+              type="date" 
+              class="form-control" 
+              [value]="harvestDate()"
+              (input)="harvestDate.set($any($event.target).value)"
+              required
+            >
+          </div>
+        </div>
+
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label class="form-label">Quantité récoltée / estimée *</label>
+            <input 
+              type="number" 
+              class="form-control" 
+              [value]="harvestQty()"
+              (input)="harvestQty.set(+$any($event.target).value)"
+              required
+            >
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Statut de la Récolte *</label>
+            <select 
+              class="form-control"
+              [value]="harvestStatus()"
+              (change)="harvestStatus.set($any($event.target).value)"
+            >
+              <option value="Récoltée">Récoltée (Disponible en stock)</option>
+              <option value="En cours">En cours de cueillette</option>
+              <option value="Planifiée">Planifiée (Prochaine récolte)</option>
+              <option value="Commercialisée">Commercialisée (Épuisée)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label class="form-label">Calibre &amp; Qualité</label>
+            <input 
+              type="text" 
+              class="form-control" 
+              placeholder="Ex: Extra - Premier Choix"
+              [value]="harvestGrade()"
+              (input)="harvestGrade.set($any($event.target).value)"
+            >
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Méthode de Récolte</label>
+            <input 
+              type="text" 
+              class="form-control" 
+              placeholder="Ex: Cueillette manuelle sélective"
+              [value]="harvestMethod()"
+              (input)="harvestMethod.set($any($event.target).value)"
+            >
+          </div>
+        </div>
+
+        <div class="checkbox-row">
+          <label class="custom-checkbox">
+            <input 
+              type="checkbox" 
+              [checked]="harvestSyncWithStock()" 
+              (change)="harvestSyncWithStock.set(!harvestSyncWithStock())"
+            >
+            <span>🔄 Synchroniser automatiquement cette quantité avec mon stock commercial en ligne</span>
+          </label>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Notes agronomiques (Météo, Terroir, Rendement)</label>
+          <textarea 
+            class="form-control" 
+            rows="2" 
+            placeholder="Ex: Excellente maturité après les pluies d'automne, taux de sucre très élevé..."
+            [value]="harvestNotes()"
+            (input)="harvestNotes.set($any($event.target).value)"
+          ></textarea>
+        </div>
+
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn-cancel" (click)="showModal.set(false)">Annuler</button>
+        <button type="button" class="btn-confirm" (click)="saveHarvest()">
+          <i class="fa fa-check"></i>
+          <span>{{ modalMode() === 'create' ? 'Enregistrer la Récolte' : 'Mettre à Jour' }}</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+}

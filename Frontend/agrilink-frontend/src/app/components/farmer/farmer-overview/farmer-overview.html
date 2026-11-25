@@ -1,0 +1,174 @@
+<app-farmer-header 
+  pageTitle="TABLEAU DE BORD PRODUCTEUR" 
+  currentPage="Vue d'Ensemble" 
+/>
+
+<main class="overview-body">
+  <div class="container">
+
+    <!-- 4 KPI CARDS -->
+    <div class="kpi-grid">
+      <div class="kpi-card kpi-offers">
+        <div class="kpi-icon-circle">
+          <i class="fa fa-store"></i>
+        </div>
+        <div class="kpi-body">
+          <span class="kpi-label">Offres Actives sur Marketplace</span>
+          <h3 class="kpi-value">{{ farmerOffers().length }}</h3>
+          <a routerLink="/espace-agriculteur/offres" class="kpi-link">Gérer mes offres →</a>
+        </div>
+      </div>
+
+      <div class="kpi-card kpi-stock">
+        <div class="kpi-icon-circle">
+          <i class="fa fa-boxes"></i>
+        </div>
+        <div class="kpi-body">
+          <span class="kpi-label">Stock Total Disponible</span>
+          <h3 class="kpi-value">{{ totalStockKg() | number }} <small>Kg/Unités</small></h3>
+          <span class="kpi-hint">Prêt pour expédition directe</span>
+        </div>
+      </div>
+
+      <div class="kpi-card kpi-harvests">
+        <div class="kpi-icon-circle">
+          <i class="fa fa-apple-alt"></i>
+        </div>
+        <div class="kpi-body">
+          <span class="kpi-label">Volume Récolté de Saison</span>
+          <h3 class="kpi-value">{{ totalHarvestedQty() | number }} <small>Kg</small></h3>
+          <a routerLink="/espace-agriculteur/recoltes" class="kpi-link">Voir mes récoltes →</a>
+        </div>
+      </div>
+
+      <div class="kpi-card kpi-rating">
+        <div class="kpi-icon-circle">
+          <i class="fa fa-star"></i>
+        </div>
+        <div class="kpi-body">
+          <span class="kpi-label">Note &amp; Confiance Consommateurs</span>
+          <h3 class="kpi-value">{{ farmer().rating.toFixed(1) }} <small>/ 5</small></h3>
+          <span class="kpi-hint">{{ farmer().reviewsCount }} avis certifiés</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- QUICK ACTIONS PROMO BAR -->
+    <div class="quick-banner-actions">
+      <div class="qba-item">
+        <div class="qba-icon">🏷️</div>
+        <div class="qba-info">
+          <h4>Publier une Offre</h4>
+          <p>Mettez en vente vos produits frais directement aux consommateurs sans intermédiaire.</p>
+        </div>
+        <a routerLink="/espace-agriculteur/offres" class="btn-qba">Gérer les Offres</a>
+      </div>
+
+      <div class="qba-item">
+        <div class="qba-icon">🚜</div>
+        <div class="qba-info">
+          <h4>Planifier une Récolte</h4>
+          <p>Enregistrez vos parcelles, dates de cueillette et synchronisez vos stocks.</p>
+        </div>
+        <a routerLink="/espace-agriculteur/recoltes" class="btn-qba qba-gold">Gérer les Récoltes</a>
+      </div>
+
+      <div class="qba-item qba-highlight">
+        <div class="qba-icon">✨</div>
+        <div class="qba-info">
+          <h4>Nouveau Produit</h4>
+          <p>Votre produit n'existe pas dans le catalogue ? Créez-le et affectez-lui offre ou récolte !</p>
+        </div>
+        <a routerLink="/espace-agriculteur/nouveau-produit" class="btn-qba qba-primary">Créer Produit</a>
+      </div>
+    </div>
+
+    <!-- DETAILS GRID -->
+    <div class="overview-details-grid">
+
+      <!-- ACTIVE OFFERS PREVIEW -->
+      <div class="dash-box">
+        <div class="dash-box__header">
+          <div class="dbh-title">
+            <i class="fa fa-shopping-basket"></i>
+            <h3>Dernières Offres en Vente</h3>
+          </div>
+          <a routerLink="/espace-agriculteur/offres" class="btn-link-action">
+            Voir toutes les offres ({{ farmerOffers().length }}) →
+          </a>
+        </div>
+
+        <div class="dash-box__body">
+          @if (farmerOffers().length > 0) {
+            <div class="mini-offers-list">
+              @for (item of farmerOffers().slice(0, 4); track item.offer.id) {
+                <div class="mini-offer-item">
+                  <img [src]="item.product.image" [alt]="item.product.name" class="moi-thumb">
+                  <div class="moi-info">
+                    <h4>{{ item.product.name }}</h4>
+                    <span class="moi-sub">{{ item.offer.certification }} • {{ item.offer.harvestDate }}</span>
+                  </div>
+                  <div class="moi-pricing">
+                    <strong class="moi-price">{{ item.offer.price.toFixed(3) }} DT</strong>
+                    <span class="moi-stock">{{ item.offer.availableStock }} en stock</span>
+                  </div>
+                  <a [routerLink]="['/product', item.product.id]" class="moi-view-btn" title="Voir sur le site">
+                    <i class="fa fa-external-link-alt"></i>
+                  </a>
+                </div>
+              }
+            </div>
+          } @else {
+            <div class="empty-mini">
+              <p>Aucune offre en ligne.</p>
+              <a routerLink="/espace-agriculteur/offres" class="btn-sm-primary">Créer une offre</a>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- HARVESTS PREVIEW -->
+      <div class="dash-box">
+        <div class="dash-box__header">
+          <div class="dbh-title">
+            <i class="fa fa-calendar-check"></i>
+            <h3>Planning &amp; État des Récoltes</h3>
+          </div>
+          <a routerLink="/espace-agriculteur/recoltes" class="btn-link-action">
+            Voir toutes les récoltes ({{ farmerHarvests().length }}) →
+          </a>
+        </div>
+
+        <div class="dash-box__body">
+          @if (farmerHarvests().length > 0) {
+            <div class="mini-harvests-list">
+              @for (h of farmerHarvests().slice(0, 4); track h.id) {
+                <div class="mini-harvest-item">
+                  <div class="mhi-status-indicator" [class]="'status-' + h.status.toLowerCase()"></div>
+                  <div class="mhi-info">
+                    <h4>{{ h.productName }}</h4>
+                    <span class="mhi-parcel">📍 {{ h.parcelName }}</span>
+                  </div>
+                  <div class="mhi-date">
+                    <strong>{{ h.quantity | number }} {{ h.unit }}</strong>
+                    <span>{{ h.harvestDate }}</span>
+                  </div>
+                  <span class="badge-status" [class]="'badge-' + h.status.toLowerCase()">
+                    {{ h.status }}
+                  </span>
+                </div>
+              }
+            </div>
+          } @else {
+            <div class="empty-mini">
+              <p>Aucune récolte enregistrée.</p>
+              <a routerLink="/espace-agriculteur/recoltes" class="btn-sm-primary">Déclarer une récolte</a>
+            </div>
+          }
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</main>

@@ -1,0 +1,119 @@
+<!-- ===== HERO BANNER ===== -->
+<section class="farmer-hero">
+  <div class="farmer-hero__overlay"></div>
+  <div class="container farmer-hero__content">
+    <span class="farmer-hero__subtitle">Portail Professionnel Agriculteurs &amp; Producteurs</span>
+    <h1 class="farmer-hero__title">{{ pageTitle() }}</h1>
+    <div class="farmer-hero__brush"></div>
+    <div class="farmer-hero__breadcrumb">
+      <a routerLink="/">Accueil</a>
+      <span class="sep">→</span>
+      <a routerLink="/marketplace">Marketplace</a>
+      <span class="sep">→</span>
+      <a routerLink="/espace-agriculteur">Espace Agriculteur</a>
+      <span class="sep">→</span>
+      <span class="current">{{ currentPage() }}</span>
+    </div>
+  </div>
+  <div class="grass-divider-wave"></div>
+</section>
+
+<!-- ===== FARMER PROFILE BAR ===== -->
+<div class="container farmer-header-body">
+  <div class="farmer-profile-card">
+    <div class="fpc-main">
+      <div class="fpc-avatar-wrap">
+        <img [src]="farmer().avatar" [alt]="farmer().name" class="fpc-avatar">
+        <span class="fpc-online-badge" title="En ligne"></span>
+      </div>
+
+      <div class="fpc-details">
+        <div class="fpc-name-row">
+          <h2 class="fpc-name">{{ farmer().name }}</h2>
+          <span class="verified-tag">
+            <i class="fa fa-check-circle"></i> Agriculteur Vérifié
+          </span>
+        </div>
+
+        <div class="fpc-farm-info">
+          <strong class="farm-name">{{ farmer().farmName }}</strong>
+          <span class="farm-dot">•</span>
+          <span class="farm-loc"><i class="fa fa-map-marker-alt"></i> {{ farmer().location }}</span>
+          <span class="farm-dot">•</span>
+          <span class="farm-phone"><i class="fa fa-phone"></i> {{ farmer().phone }}</span>
+        </div>
+
+        <div class="fpc-badges">
+          @for (cert of farmer().certifications; track cert) {
+            <span class="cert-pill">🌿 {{ cert }}</span>
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- FARMER SWITCHER & QUICK ACTIONS -->
+    <div class="fpc-actions">
+      <div class="profile-switcher">
+        <label for="farmer-header-select"><i class="fa fa-user-circle"></i> Compte Agriculteur :</label>
+        <select 
+          id="farmer-header-select" 
+          [value]="farmer().id" 
+          (change)="changeFarmer($any($event.target).value)"
+        >
+          @for (f of allFarmers(); track f.id) {
+            <option [value]="f.id">{{ f.name }} ({{ f.farmName }})</option>
+          }
+        </select>
+      </div>
+
+      <div class="fpc-cta-buttons">
+        <a routerLink="/espace-agriculteur/nouveau-produit" class="btn-create-prod-header">
+          <i class="fa fa-plus-circle"></i>
+          <span>Créer un Produit</span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- NAVIGATION TABS BETWEEN DEDICATED PAGES -->
+  <nav class="dashboard-tabs">
+    <a 
+      routerLink="/espace-agriculteur" 
+      routerLinkActive="active" 
+      [routerLinkActiveOptions]="{ exact: true }"
+      class="tab-link"
+    >
+      <i class="fa fa-chart-pie"></i>
+      <span>Tableau de Bord</span>
+    </a>
+
+    <a 
+      routerLink="/espace-agriculteur/offres" 
+      routerLinkActive="active" 
+      class="tab-link"
+    >
+      <i class="fa fa-tags"></i>
+      <span>Mes Offres</span>
+      <span class="tab-badge">{{ offersCount() }}</span>
+    </a>
+
+    <a 
+      routerLink="/espace-agriculteur/recoltes" 
+      routerLinkActive="active" 
+      class="tab-link"
+    >
+      <i class="fa fa-tractor"></i>
+      <span>Mes Récoltes</span>
+      <span class="tab-badge">{{ harvestsCount() }}</span>
+    </a>
+
+    <a 
+      routerLink="/espace-agriculteur/nouveau-produit" 
+      routerLinkActive="active" 
+      class="tab-link tab-link-highlight"
+    >
+      <i class="fa fa-sparkles"></i>
+      <span>✨ Nouveau Produit &amp; Affectation</span>
+    </a>
+  </nav>
+</div>
