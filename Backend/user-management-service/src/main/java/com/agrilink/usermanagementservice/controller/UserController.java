@@ -50,6 +50,7 @@ public class UserController {
     ) {
         return service.createMyProfile(
                 currentUser.keycloakId(),
+                currentUser.roles(),
                 request
         );
     }
