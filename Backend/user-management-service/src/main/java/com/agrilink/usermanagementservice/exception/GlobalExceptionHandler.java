@@ -9,6 +9,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.stream.Collectors;
@@ -63,6 +64,20 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.BAD_GATEWAY,
                 "Erreur de synchronisation avec le service d'authentification. "
                         + "Veuillez reessayer ou contacter l'administrateur.", req);
+    }
+
+    /**
+     * ResponseStatusException levee par la couche service (ex. : profil deja actif,
+     * tentative de suppression de son propre compte).
+     * Garantit que toutes les reponses d'erreur respectent le format ErrorResponse.
+     */
+    @ExceptionHandler(ResponseStatusException.class)
+    ResponseEntity<ErrorResponse> responseStatus(ResponseStatusException ex, HttpServletRequest req) {
+        HttpStatus status = HttpStatus.resolve(ex.getStatusCode().value());
+        if (status == null) {
+            status = HttpStatus.INTERNAL_SERVER_ERROR;
+        }
+        return build(status, ex.getReason() != null ? ex.getReason() : ex.getMessage(), req);
     }
 
     private ResponseEntity<ErrorResponse> build(HttpStatus status, String message, HttpServletRequest req) {

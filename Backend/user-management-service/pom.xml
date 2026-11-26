@@ -59,14 +59,17 @@
             <artifactId>lombok</artifactId>
             <optional>true</optional>
         </dependency>
+        <!-- Les dependances de test JPA et validation sont fournies
+             transitivement par spring-boot-starter-data-jpa,
+             spring-boot-starter-validation et spring-boot-starter-test.
+             Les artefacts spring-boot-starter-data-jpa-test et
+             spring-boot-starter-validation-test n'existent pas dans Maven Central
+             et ont ete supprimes pour eviter des echecs de resolution. -->
+
+        <!-- Tests -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-data-jpa-test</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-validation-test</artifactId>
+            <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
 

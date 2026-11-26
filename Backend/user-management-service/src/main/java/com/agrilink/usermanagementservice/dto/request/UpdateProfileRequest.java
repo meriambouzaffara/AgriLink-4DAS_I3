@@ -9,8 +9,7 @@ public record UpdateProfileRequest(
         @NotBlank(message = "First name is required")
         @Size(max = 100)
         String firstName,
-        @NotBlank(message = "lastNa" +
-                " name is required")
+        @NotBlank(message = "Last name is required")
         @Size(max = 100)
         String lastName,
 

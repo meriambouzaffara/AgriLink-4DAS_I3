@@ -4,7 +4,6 @@ package com.agrilink.usermanagementservice.keycloak;
 import com.agrilink.usermanagementservice.exception.KeycloakException;
 
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
