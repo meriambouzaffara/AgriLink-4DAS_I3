@@ -1,0 +1,9 @@
+.idea/
+.idea_backup/
+*.iml
+target/
+node_modules/
+httpRequests/
+*.http.response
+.env
+.env.*
