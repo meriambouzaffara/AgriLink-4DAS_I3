@@ -32,10 +32,10 @@ Microservice responsable du panier, de la création des commandes, de leur valid
 
 ## Collaboration avec les autres microservices
 1. MS3 reçoit une demande de création de commande.
-2. MS3 contacte MS2 pour vérifier la disponibilité et réserver la quantité demandée.
-3. Si le stock est disponible, MS3 enregistre et confirme la commande.
-4. MS3 publie l'événement métier `OrderConfirmed`.
-5. MS4 reçoit cet événement et prépare la livraison.
+2. MS3 vérifie la disponibilité et enregistre la commande au statut `PENDING`.
+3. La confirmation réserve le stock et passe la commande à `CONFIRMED`.
+4. L'annulation d'une commande confirmée libère sa réservation.
+5. L'intégration MS2 réelle et les événements MS4 restent à implémenter.
 
 MS1 fournit l'identité du client. Les références partagées (`userId`, `productId`) sont échangées sans recopier toutes les données des autres services.
 
@@ -47,7 +47,8 @@ Base proposée : **MySQL**.
 
 
 ## Configuration et lancement
-À compléter selon la configuration Spring Boot, le port et les variables d'environnement du service.
+Pour le développement autonome : `mvn spring-boot:run -Dspring-boot.run.profiles=dev-mock`.
+Voir [DEVELOPMENT.md](DEVELOPMENT.md) pour les API, les limites du stock simulé et les exemples HTTP.
 
 ## Responsable
 Khaled

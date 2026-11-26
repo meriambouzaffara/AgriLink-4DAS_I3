@@ -1,0 +1,3 @@
+agrilink:
+  dev:
+    allowed-origins: http://localhost:5173

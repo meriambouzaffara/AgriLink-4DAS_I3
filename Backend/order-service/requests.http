@@ -1,0 +1,105 @@
+### AgriLink MS3 local demo
+# Start the backend with the dev-mock profile first. Run requests from top to bottom.
+# IntelliJ HTTP Client saves generated IDs from the create responses below.
+@base = http://localhost:8083
+@customer = 12
+
+### 1. Development product catalog
+GET {{base}}/api/dev/products
+
+### 2. Create an order (50.000 + 15.000 = 65.000 TND)
+POST {{base}}/api/orders
+Content-Type: application/json
+X-Customer-Id: {{customer}}
+
+{"lignes":[{"produitId":101,"quantite":10},{"produitId":102,"quantite":5}]}
+
+> {% client.global.set("orderId", response.body.id); %}
+
+### 3. Retrieve the created order
+GET {{base}}/api/orders/{{orderId}}
+X-Customer-Id: {{customer}}
+
+### 4. Customer history
+GET {{base}}/api/orders/customer/{{customer}}
+X-Customer-Id: {{customer}}
+
+### 5. Confirm the order
+PATCH {{base}}/api/orders/{{orderId}}/confirm
+X-Customer-Id: {{customer}}
+
+### 6. Verify stock reduction: 101 = 90, 102 = 145
+GET {{base}}/api/dev/products
+
+### 7. Cancel the confirmed order
+PATCH {{base}}/api/orders/{{orderId}}/cancel
+X-Customer-Id: {{customer}}
+
+### 8. Verify stock restoration: 101 = 100, 102 = 150
+GET {{base}}/api/dev/products
+
+### 9. Create a separate order for delivery progression
+POST {{base}}/api/orders
+Content-Type: application/json
+X-Customer-Id: {{customer}}
+
+{"lignes":[{"produitId":103,"quantite":2}]}
+
+> {% client.global.set("deliveryOrderId", response.body.id); %}
+
+### 9a. Confirm the delivery order before simulating MS4
+PATCH {{base}}/api/orders/{{deliveryOrderId}}/confirm
+X-Customer-Id: {{customer}}
+
+### 10. Simulate preparation
+PATCH {{base}}/api/dev/orders/{{deliveryOrderId}}/status
+Content-Type: application/json
+
+{"statut":"IN_PREPARATION"}
+
+### 11. Simulate shipment
+PATCH {{base}}/api/dev/orders/{{deliveryOrderId}}/status
+Content-Type: application/json
+
+{"statut":"SHIPPED"}
+
+### 12. Simulate delivery
+PATCH {{base}}/api/dev/orders/{{deliveryOrderId}}/status
+Content-Type: application/json
+
+{"statut":"DELIVERED"}
+
+### 13. Empty order: 400
+POST {{base}}/api/orders
+Content-Type: application/json
+X-Customer-Id: {{customer}}
+
+{"lignes":[]}
+
+### 14. Invalid quantity: 400
+POST {{base}}/api/orders
+Content-Type: application/json
+X-Customer-Id: {{customer}}
+
+{"lignes":[{"produitId":101,"quantite":0}]}
+
+### 15. Unknown product: 404
+POST {{base}}/api/orders
+Content-Type: application/json
+X-Customer-Id: {{customer}}
+
+{"lignes":[{"produitId":999999,"quantite":1}]}
+
+### 16. Another customer cannot retrieve the first order: 404
+GET {{base}}/api/orders/{{orderId}}
+X-Customer-Id: 13
+
+### 17. Invalid backward delivery transition: 409
+PATCH {{base}}/api/dev/orders/{{deliveryOrderId}}/status
+Content-Type: application/json
+
+{"statut":"IN_PREPARATION"}
+
+### 18. Confirmation after cancellation: 409
+PATCH {{base}}/api/orders/{{orderId}}/confirm
+X-Customer-Id: {{customer}}
