@@ -1,0 +1,202 @@
+<app-cooperative-header 
+  pageTitle="CAMPAGNES DE COLLECTE GROUPÉE" 
+  currentPage="Annonces &amp; Collectes" 
+/>
+
+<main class="annonces-page-body">
+  <div class="container">
+
+    <!-- TOP TOOLBAR -->
+    <div class="page-toolbar">
+      <div class="filters-pills">
+        <button 
+          class="pill-btn" 
+          [class.active]="filterStatut() === 'TOUTES'"
+          (click)="filterStatut.set('TOUTES')"
+        >
+          Toutes ({{ annonces().length }})
+        </button>
+        <button 
+          class="pill-btn" 
+          [class.active]="filterStatut() === 'OUVERTE'"
+          (click)="filterStatut.set('OUVERTE')"
+        >
+          <span class="status-dot dot-green"></span> Ouvertes
+        </button>
+        <button 
+          class="pill-btn" 
+          [class.active]="filterStatut() === 'OBJECTIF_ATTEINT'"
+          (click)="filterStatut.set('OBJECTIF_ATTEINT')"
+        >
+          <span class="status-dot dot-gold"></span> Objectif Atteint
+        </button>
+        <button 
+          class="pill-btn" 
+          [class.active]="filterStatut() === 'CLOTUREE'"
+          (click)="filterStatut.set('CLOTUREE')"
+        >
+          <span class="status-dot dot-gray"></span> Clôturées
+        </button>
+      </div>
+
+      <button class="btn-create-campaign" (click)="openCreateModal()">
+        <i class="fa fa-plus-circle"></i>
+        <span>Publier une Collecte</span>
+      </button>
+    </div>
+
+    <!-- ANNONCES CARDS GRID -->
+    <div class="annonces-grid">
+      @for (a of filteredAnnonces(); track a.id) {
+        <div class="campaign-card">
+          <div class="cc-header">
+            <div class="cc-tag-wrap">
+              <span class="cc-badge-id">Campagne {{ a.id }}</span>
+              <span class="cc-date"><i class="fa fa-calendar-alt"></i> Publiée le {{ a.datePublication || 'Récemment' }}</span>
+            </div>
+            <span class="status-pill" [class]="'status-' + a.statut.toLowerCase()">
+              {{ a.statut }}
+            </span>
+          </div>
+
+          <div class="cc-body">
+            <h3 class="cc-title">{{ a.besoinInfo?.produitNom || 'Collecte Agro-Alimentaire' }}</h3>
+            
+            <div class="cc-meta">
+              <span class="meta-item"><i class="fa fa-building"></i> Destiné à : <strong>{{ a.besoinInfo?.clientNom || 'Client B2B' }}</strong></span>
+              <span class="meta-item"><i class="fa fa-hourglass-half"></i> Date limite : <strong>{{ a.dateLimite }}</strong></span>
+            </div>
+
+            <p class="cc-description">{{ a.description }}</p>
+
+            <!-- PROGRESS GAUGE -->
+            <div class="cc-progress-section">
+              <div class="cps-numbers">
+                <div class="num-box">
+                  <span class="nb-label">Collecté &amp; Validé</span>
+                  <strong class="nb-val val-green">{{ a.quantiteAcceptee | number }} Kg</strong>
+                </div>
+                <div class="num-box text-right">
+                  <span class="nb-label">Objectif de la Collecte</span>
+                  <strong class="nb-val">{{ a.quantiteObjectif | number }} Kg</strong>
+                </div>
+              </div>
+
+              <div class="progress-track">
+                <div 
+                  class="progress-fill" 
+                  [style.width.%]="getPercentage(a.quantiteAcceptee, a.quantiteObjectif)"
+                  [class.complete]="a.quantiteAcceptee >= a.quantiteObjectif"
+                ></div>
+              </div>
+
+              <div class="cps-footer">
+                <span class="pct-tag">{{ getPercentage(a.quantiteAcceptee, a.quantiteObjectif) }}% couvert</span>
+                <span class="remaining-tag">
+                  @if (a.quantiteObjectif > a.quantiteAcceptee) {
+                    Reste {{ (a.quantiteObjectif - a.quantiteAcceptee) | number }} Kg à trouver
+                  } @else {
+                    <i class="fa fa-check-circle"></i> Objectif atteint à 100%
+                  }
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div class="cc-footer">
+            <a routerLink="/espace-cooperative/propositions" class="btn-cc-action btn-proposals">
+              <i class="fa fa-tractor"></i>
+              <span>Voir Propositions ({{ a.propositionsCount || 0 }})</span>
+            </a>
+
+            @if (a.statut === 'OUVERTE' || a.statut === 'OBJECTIF_ATTEINT') {
+              <button class="btn-cc-action btn-close-camp" (click)="cloturer(a.id!)">
+                <i class="fa fa-lock"></i>
+                <span>Clôturer</span>
+              </button>
+            }
+          </div>
+        </div>
+      }
+    </div>
+
+  </div>
+</main>
+
+<!-- MODAL CRÉATION ANNONCE -->
+@if (showCreateModal()) {
+  <div class="modal-backdrop" (click)="closeCreateModal()">
+    <div class="modal-dialog" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div class="mh-title">
+          <i class="fa fa-bullhorn"></i>
+          <h3>Lancer une Nouvelle Collecte Groupée</h3>
+        </div>
+        <button class="modal-close-btn" (click)="closeCreateModal()">×</button>
+      </div>
+
+      <div class="modal-body">
+        <p class="modal-intro">
+          Associez cette campagne à un besoin client exprimé pour mobiliser les producteurs partenaires.
+        </p>
+
+        <form (ngSubmit)="submitNewAnnonce()" #annonceForm="ngForm">
+          <div class="form-group">
+            <label for="besoinSelect">Besoin Client à prendre en charge * :</label>
+            <select id="besoinSelect" [(ngModel)]="newAnnonce.besoinId" name="besoinId" required>
+              @for (b of besoins(); track b.id) {
+                <option [value]="b.id">
+                  {{ b.productNom }} ({{ b.quantiteDemandee | number }} Kg pour {{ b.clientNom }})
+                </option>
+              }
+            </select>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="quantiteObjectif">Quantité Objectif (Kg) * :</label>
+              <input 
+                type="number" 
+                id="quantiteObjectif" 
+                [(ngModel)]="newAnnonce.quantiteObjectif" 
+                name="quantiteObjectif" 
+                min="10" 
+                required 
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="dateLimite">Date Limite de Collecte * :</label>
+              <input 
+                type="date" 
+                id="dateLimite" 
+                [(ngModel)]="newAnnonce.dateLimite" 
+                name="dateLimite" 
+                required 
+              />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="description">Instructions &amp; Qualité demandée aux agriculteurs :</label>
+            <textarea 
+              id="description" 
+              [(ngModel)]="newAnnonce.description" 
+              name="description" 
+              rows="3" 
+              placeholder="Ex: Calibre régulier, livraison directe au dépôt de la coopérative..."
+            ></textarea>
+          </div>
+
+          <div class="modal-actions">
+            <button type="button" class="btn-cancel" (click)="closeCreateModal()">Annuler</button>
+            <button type="submit" class="btn-submit" [disabled]="!annonceForm.form.valid">
+              <i class="fa fa-paper-plane"></i>
+              <span>Publier l'Annonce</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+}

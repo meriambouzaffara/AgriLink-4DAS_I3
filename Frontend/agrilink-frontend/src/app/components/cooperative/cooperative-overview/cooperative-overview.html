@@ -1,0 +1,209 @@
+<app-cooperative-header 
+  pageTitle="TABLEAU DE BORD COOPÉRATIVE" 
+  currentPage="Vue d'Ensemble" 
+/>
+
+<main class="overview-body">
+  <div class="container">
+
+    <!-- 4 KPI CARDS -->
+    <div class="kpi-grid">
+      <div class="kpi-card kpi-campaigns">
+        <div class="kpi-icon-circle">
+          <i class="fa fa-bullhorn"></i>
+        </div>
+        <div class="kpi-body">
+          <span class="kpi-label">Campagnes de Collecte Actives</span>
+          <h3 class="kpi-value">{{ stats().annoncesOuvertes }}</h3>
+          <a routerLink="/espace-cooperative/annonces" class="kpi-link">Voir les campagnes →</a>
+        </div>
+      </div>
+
+      <div class="kpi-card kpi-volume">
+        <div class="kpi-icon-circle">
+          <i class="fa fa-weight-hanging"></i>
+        </div>
+        <div class="kpi-body">
+          <span class="kpi-label">Volume Accepte / En Collecte</span>
+          <h3 class="kpi-value">{{ (stats().totalCollecteKg / 1000) | number:'1.1-1' }} <small>Tonnes</small></h3>
+          <span class="kpi-hint">Objectif global : {{ (stats().totalObjectifKg / 1000) | number:'1.0-0' }} T</span>
+        </div>
+      </div>
+
+      <div class="kpi-card kpi-rate">
+        <div class="kpi-icon-circle">
+          <i class="fa fa-percentage"></i>
+        </div>
+        <div class="kpi-body">
+          <span class="kpi-label">Taux Global de Remplissage</span>
+          <h3 class="kpi-value">{{ stats().tauxCouverture }} <small>%</small></h3>
+          <div class="kpi-progress-bar">
+            <div class="kpi-progress-fill" [style.width.%]="stats().tauxCouverture"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="kpi-card kpi-satisfied">
+        <div class="kpi-icon-circle">
+          <i class="fa fa-check-double"></i>
+        </div>
+        <div class="kpi-body">
+          <span class="kpi-label">Besoins Clients Satisfaits</span>
+          <h3 class="kpi-value">{{ stats().besoinsSatisfaits }} <small>/ {{ stats().totalBesoins }}</small></h3>
+          <a routerLink="/espace-cooperative/besoins" class="kpi-link">Gérer les besoins B2B →</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- REGLE METIER BANNER (RAPPORT) -->
+    <div class="business-rule-banner">
+      <div class="brb-icon">💡</div>
+      <div class="brb-content">
+        <h4>Engagement Qualité &amp; Traçabilité des Collectes</h4>
+        <p>
+          Un besoin client n'est déclaré <strong>SATISFAIT</strong> que lorsque la quantité 
+          <strong>réellement reçue et pesée au dépôt</strong> couvre l'objectif demandé, garantissant une transparence totale.
+        </p>
+      </div>
+      <a routerLink="/espace-cooperative/propositions" class="brb-action">
+        <i class="fa fa-balance-scale"></i>
+        <span>Accéder au Dépôt de Pesée</span>
+      </a>
+    </div>
+
+    <!-- QUICK ACTIONS PROMO BAR -->
+    <div class="quick-banner-actions">
+      <div class="qba-item">
+        <div class="qba-icon">📢</div>
+        <div class="qba-info">
+          <h4>Lancer une Campagne de Collecte</h4>
+          <p>Publiez un appel à collecte pour mobiliser les producteurs partenaires sur un besoin précis.</p>
+        </div>
+        <a routerLink="/espace-cooperative/annonces" class="btn-qba">Voir les Campagnes</a>
+      </div>
+
+      <div class="qba-item">
+        <div class="qba-icon">📦</div>
+        <div class="qba-info">
+          <h4>Besoins Commerçants &amp; Grossistes</h4>
+          <p>Consultez les demandes en gros ou enregistrez un nouveau contrat d'approvisionnement B2B.</p>
+        </div>
+        <a routerLink="/espace-cooperative/besoins" class="btn-qba qba-gold">Consulter les Besoins</a>
+      </div>
+
+      <div class="qba-item qba-highlight">
+        <div class="qba-icon">⚖️</div>
+        <div class="qba-info">
+          <h4>Réception &amp; Pesée au Dépôt</h4>
+          <p>Validez les offres des agriculteurs et enregistrez les pesées effectives au dépôt.</p>
+        </div>
+        <a routerLink="/espace-cooperative/propositions" class="btn-qba qba-primary">Gérer les Pesées</a>
+      </div>
+    </div>
+
+    <!-- DETAILS GRID -->
+    <div class="overview-details-grid">
+
+      <!-- ACTIVE ANNONCES PREVIEW -->
+      <div class="dash-box">
+        <div class="dash-box__header">
+          <div class="dbh-title">
+            <i class="fa fa-bullhorn"></i>
+            <h3>Campagnes de Collecte en Cours</h3>
+          </div>
+          <a routerLink="/espace-cooperative/annonces" class="btn-link-action">
+            Toutes les campagnes ({{ annonces().length }}) →
+          </a>
+        </div>
+
+        <div class="dash-box__body">
+          <div class="annonces-list">
+            @for (a of annonces(); track a.id) {
+              <div class="annonce-item">
+                <div class="ai-header">
+                  <div class="ai-title-wrap">
+                    <span class="ai-id">Campagne {{ a.id }}</span>
+                    <h4 class="ai-title">{{ a.besoinInfo?.produitNom || 'Collecte Produit Local' }}</h4>
+                  </div>
+                  <span class="status-pill" [class]="'status-' + a.statut.toLowerCase()">
+                    {{ a.statut }}
+                  </span>
+                </div>
+
+                <p class="ai-desc">{{ a.description }}</p>
+
+                <div class="ai-progress-wrap">
+                  <div class="aip-labels">
+                    <span>Quantité acceptée : <strong>{{ a.quantiteAcceptee | number }} Kg</strong></span>
+                    <span>Objectif : <strong>{{ a.quantiteObjectif | number }} Kg</strong></span>
+                  </div>
+                  <div class="progress-bar-base">
+                    <div 
+                      class="progress-bar-fill" 
+                      [style.width.%]="getPercentage(a.quantiteAcceptee, a.quantiteObjectif)"
+                      [class.complete]="a.quantiteAcceptee >= a.quantiteObjectif"
+                    ></div>
+                  </div>
+                  <div class="aip-footer">
+                    <span>{{ getPercentage(a.quantiteAcceptee, a.quantiteObjectif) }}% de l'objectif</span>
+                    <span class="ai-deadline"><i class="fa fa-calendar-alt"></i> Date limite : {{ a.dateLimite }}</span>
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- RECENT PROPOSITIONS PREVIEW -->
+      <div class="dash-box">
+        <div class="dash-box__header">
+          <div class="dbh-title">
+            <i class="fa fa-tractor"></i>
+            <h3>Dernières Propositions Agriculteurs</h3>
+          </div>
+          <a routerLink="/espace-cooperative/propositions" class="btn-link-action">
+            Gérer le dépôt →
+          </a>
+        </div>
+
+        <div class="dash-box__body">
+          <div class="props-list">
+            @for (p of propositions(); track p.id) {
+              <div class="prop-item">
+                <div class="pi-header">
+                  <div>
+                    <h5 class="pi-farmer">{{ p.agriculteurNom }}</h5>
+                    <span class="pi-farm">{{ p.agriculteurFerme }}</span>
+                  </div>
+                  <span class="status-pill" [class]="'status-' + p.statut.toLowerCase()">
+                    {{ p.statut }}
+                  </span>
+                </div>
+
+                <div class="pi-metrics">
+                  <div class="metric-col">
+                    <span class="m-label">Proposé</span>
+                    <strong class="m-val">{{ p.quantiteProposee | number }} Kg</strong>
+                  </div>
+                  <div class="metric-col">
+                    <span class="m-label">Accepté</span>
+                    <strong class="m-val val-green">{{ (p.quantiteAcceptee || 0) | number }} Kg</strong>
+                  </div>
+                  <div class="metric-col">
+                    <span class="m-label">Reçu (Pesé)</span>
+                    <strong class="m-val val-blue">{{ (p.quantiteRecue || 0) | number }} Kg</strong>
+                  </div>
+                </div>
+
+                <p class="pi-comment">"{{ p.commentaire }}"</p>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</main>

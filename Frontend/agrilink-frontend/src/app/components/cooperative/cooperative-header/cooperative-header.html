@@ -1,0 +1,131 @@
+<!-- ===== HERO BANNER ===== -->
+<section class="coop-hero">
+  <div class="coop-hero__overlay"></div>
+  <div class="container coop-hero__content">
+    <span class="coop-hero__subtitle">Hub Fédéral &amp; Collectes Groupées Inter-Régionales</span>
+    <h1 class="coop-hero__title">{{ pageTitle() }}</h1>
+    <div class="coop-hero__brush"></div>
+    <div class="coop-hero__breadcrumb">
+      <a routerLink="/">Accueil</a>
+      <span class="sep">→</span>
+      <a routerLink="/marketplace">Marketplace</a>
+      <span class="sep">→</span>
+      <a routerLink="/espace-cooperative">Espace Coopérative</a>
+      <span class="sep">→</span>
+      <span class="current">{{ currentPage() }}</span>
+    </div>
+  </div>
+  <div class="grass-divider-wave"></div>
+</section>
+
+<!-- ===== COOP PROFILE BAR ===== -->
+<div class="container coop-header-body">
+  <div class="coop-profile-card">
+    <div class="cpc-main">
+      <div class="cpc-icon-wrap">
+        <div class="cpc-badge-icon">🏛️</div>
+        <span class="cpc-online-badge" title="Dépôt Ouvert & Opérationnel"></span>
+      </div>
+
+      <div class="cpc-details">
+        <div class="cpc-name-row">
+          <h2 class="cpc-name">{{ coop().nom }}</h2>
+          <span class="verified-tag">
+            <i class="fa fa-shield-alt"></i> Coopérative Certifiée AgriLink
+          </span>
+        </div>
+
+        <div class="cpc-info-row">
+          <strong class="coop-lead"><i class="fa fa-user-tie"></i> Resp : {{ coop().responsable }}</strong>
+          <span class="coop-dot">•</span>
+          <span class="coop-loc"><i class="fa fa-map-marker-alt"></i> {{ coop().region }}</span>
+          <span class="coop-dot">•</span>
+          <span class="coop-phone"><i class="fa fa-phone"></i> {{ coop().telephone }}</span>
+          <span class="coop-dot">•</span>
+          <span class="coop-capacity"><i class="fa fa-warehouse"></i> Capacité : {{ (coop().capaciteStockageKg / 1000) | number }} Tonnes</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- COOPERATIVE SWITCHER & QUICK ACTIONS -->
+    <div class="cpc-actions">
+      <div class="profile-switcher">
+        <label for="coop-select"><i class="fa fa-landmark"></i> Coopérative active :</label>
+        <select 
+          id="coop-select" 
+          [value]="coop().id" 
+          (change)="changeCooperative($any($event.target).value)"
+        >
+          @for (c of allCooperatives(); track c.id) {
+            <option [value]="c.id">{{ c.nom }} ({{ c.region }})</option>
+          }
+        </select>
+      </div>
+
+      <div class="cpc-cta-buttons">
+        <a routerLink="/espace-cooperative/annonces" class="btn-create-annonce-header">
+          <i class="fa fa-bullhorn"></i>
+          <span>Lancer une Collecte</span>
+        </a>
+        <a routerLink="/espace-cooperative/nouveau-besoin" class="btn-demand-header">
+          <i class="fa fa-file-invoice"></i>
+          <span>Exprimer un Besoin B2B</span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- NAVIGATION TABS -->
+  <nav class="dashboard-tabs">
+    <a 
+      routerLink="/espace-cooperative" 
+      routerLinkActive="active" 
+      [routerLinkActiveOptions]="{ exact: true }"
+      class="tab-link"
+    >
+      <i class="fa fa-chart-line"></i>
+      <span>Tableau de Bord</span>
+    </a>
+
+    <a 
+      routerLink="/espace-cooperative/annonces" 
+      routerLinkActive="active" 
+      class="tab-link"
+    >
+      <i class="fa fa-bullhorn"></i>
+      <span>Campagnes de Collecte</span>
+      <span class="tab-badge">{{ stats().annoncesOuvertes }} actives</span>
+    </a>
+
+    <a 
+      routerLink="/espace-cooperative/besoins" 
+      routerLinkActive="active" 
+      class="tab-link"
+    >
+      <i class="fa fa-boxes-packing"></i>
+      <span>Besoins Clients (Achats Groupés)</span>
+      <span class="tab-badge">{{ stats().totalBesoins }}</span>
+    </a>
+
+    <a 
+      routerLink="/espace-cooperative/propositions" 
+      routerLinkActive="active" 
+      class="tab-link"
+    >
+      <i class="fa fa-truck-loading"></i>
+      <span>Propositions &amp; Dépôt de Pesée</span>
+      @if (stats().propositionsEnAttente > 0) {
+        <span class="tab-badge badge-warning">{{ stats().propositionsEnAttente }} à valider</span>
+      }
+    </a>
+
+    <a 
+      routerLink="/espace-cooperative/nouveau-besoin" 
+      routerLinkActive="active" 
+      class="tab-link tab-link-highlight"
+    >
+      <i class="fa fa-plus-circle"></i>
+      <span>+ Nouveau Besoin B2B</span>
+    </a>
+  </nav>
+</div>

@@ -20,10 +20,11 @@ export class Navbar {
   navLinks = [
     { label: 'Accueil', href: '/' },
     { label: 'Marketplace', href: '/marketplace' },
-    { label: 'Espace Agriculteur', href: '/espace-agriculteur', isFarmer: true },
-    { label: 'Offres Producteurs', href: '/product/orange-maltaise-succulente' },
-    { label: 'Services', href: '/#services' },
-    { label: 'Contact', href: '/#contact' },
+    { label: 'Espace Agriculteur', href: '/espace-agriculteur', isFarmer: true, isCoop: false },
+    { label: 'Espace Coopérative', href: '/espace-cooperative', isFarmer: false, isCoop: true },
+    { label: 'Offres Producteurs', href: '/product/orange-maltaise-succulente', isFarmer: false, isCoop: false },
+    { label: 'Services', href: '/#services', isFarmer: false, isCoop: false },
+    { label: 'Contact', href: '/#contact', isFarmer: false, isCoop: false },
   ];
 
   constructor() {

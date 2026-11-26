@@ -1,0 +1,239 @@
+<app-cooperative-header 
+  pageTitle="PROPOSITIONS PRODUCTEURS &amp; DÉPÔT DE PESÉE" 
+  currentPage="Propositions &amp; Dépôt" 
+/>
+
+<main class="props-page-body">
+  <div class="container">
+
+    <!-- TOOLBAR -->
+    <div class="page-toolbar">
+      <div class="filters-pills">
+        <button 
+          class="pill-btn" 
+          [class.active]="filterStatut() === 'TOUTES'"
+          (click)="filterStatut.set('TOUTES')"
+        >
+          Toutes ({{ propositions().length }})
+        </button>
+        <button 
+          class="pill-btn" 
+          [class.active]="filterStatut() === 'EN_ATTENTE'"
+          (click)="filterStatut.set('EN_ATTENTE')"
+        >
+          <span class="status-dot dot-gold"></span> À statuer (En attente)
+        </button>
+        <button 
+          class="pill-btn" 
+          [class.active]="filterStatut() === 'ACCEPTEE'"
+          (click)="filterStatut.set('ACCEPTEE')"
+        >
+          <span class="status-dot dot-green"></span> Acceptées (En attente livraison)
+        </button>
+        <button 
+          class="pill-btn" 
+          [class.active]="filterStatut() === 'RECUE'"
+          (click)="filterStatut.set('RECUE')"
+        >
+          <span class="status-dot dot-blue"></span> Pesées &amp; Reçues au Dépôt
+        </button>
+      </div>
+
+      <button class="btn-farmer-propose" (click)="openProposalModal()">
+        <i class="fa fa-tractor"></i>
+        <span>Proposer une Récolte (Agriculteur)</span>
+      </button>
+    </div>
+
+    <!-- TABLE / CARDS OF PROPOSITIONS -->
+    <div class="props-grid">
+      @for (p of filteredPropositions(); track p.id) {
+        <div class="prop-card" [class.received-card]="p.statut === 'RECUE'">
+          <div class="pc-header">
+            <div class="pc-farmer-meta">
+              <span class="pc-prop-id">Offre Récolte — Réf. {{ p.id }}</span>
+              <h4 class="pc-farmer-name"><i class="fa fa-user-circle"></i> {{ p.agriculteurNom }}</h4>
+              <span class="pc-farm-name">{{ p.agriculteurFerme || 'Producteur Partenaire' }}</span>
+            </div>
+            <span class="status-pill" [class]="'status-' + p.statut.toLowerCase()">
+              {{ p.statut }}
+            </span>
+          </div>
+
+          <div class="pc-body">
+            <div class="pc-camp-ref">
+              <i class="fa fa-bullhorn"></i>
+              <span>Pour : <strong>{{ p.annonceTitre }}</strong> (Campagne {{ p.annonceId }})</span>
+            </div>
+
+            <!-- QUANTITIES 3-TIER COMPARISON -->
+            <div class="pc-quantities-bar">
+              <div class="qty-block">
+                <span class="qb-title">1. Proposé</span>
+                <strong class="qb-value">{{ p.quantiteProposee | number }} Kg</strong>
+              </div>
+              <div class="qty-arrow">→</div>
+              <div class="qty-block">
+                <span class="qb-title">2. Accepté</span>
+                <strong class="qb-value val-green">{{ (p.quantiteAcceptee || 0) | number }} Kg</strong>
+              </div>
+              <div class="qty-arrow">→</div>
+              <div class="qty-block">
+                <span class="qb-title">3. Pesé au Dépôt</span>
+                <strong class="qb-value val-blue">{{ (p.quantiteRecue || 0) | number }} Kg</strong>
+              </div>
+            </div>
+
+            <p class="pc-comment">
+              <i class="fa fa-quote-left"></i> {{ p.commentaire || 'Aucun commentaire spécifié.' }}
+            </p>
+
+            @if (p.statut === 'RECUE') {
+              <div class="verified-weighing">
+                <i class="fa fa-check-double"></i>
+                <span>Pesée validée au dépôt fédéral (Reçu : {{ p.quantiteRecue | number }} Kg)</span>
+              </div>
+            }
+          </div>
+
+          <!-- ACTIONS BAR -->
+          <div class="pc-footer">
+            @if (p.statut === 'EN_ATTENTE') {
+              <div class="decision-buttons">
+                <button class="btn-decision btn-accept" (click)="accepter(p)">
+                  <i class="fa fa-check"></i>
+                  <span>Accepter l'offre</span>
+                </button>
+                <button class="btn-decision btn-reject" (click)="refuser(p.id!)">
+                  <i class="fa fa-times"></i>
+                  <span>Refuser</span>
+                </button>
+              </div>
+            } @else if (p.statut === 'ACCEPTEE' || p.statut === 'ACCEPTEE_PARTIELLEMENT') {
+              <button class="btn-action-weigh" (click)="openReceptionModal(p)">
+                <i class="fa fa-balance-scale"></i>
+                <span>Enregistrer la Pesée &amp; Réception au Dépôt</span>
+              </button>
+            } @else if (p.statut === 'RECUE') {
+              <span class="received-status-tag">
+                <i class="fa fa-warehouse"></i> Stocké en dépôt
+              </span>
+            }
+          </div>
+        </div>
+      }
+    </div>
+
+  </div>
+</main>
+
+<!-- MODAL NOUVELLE PROPOSITION (AGRICULTEUR) -->
+@if (showProposalModal()) {
+  <div class="modal-backdrop" (click)="closeProposalModal()">
+    <div class="modal-dialog" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div class="mh-title">
+          <i class="fa fa-tractor"></i>
+          <h3>Proposer une Quantité de Récolte (Agriculteur)</h3>
+        </div>
+        <button class="modal-close-btn" (click)="closeProposalModal()">×</button>
+      </div>
+
+      <div class="modal-body">
+        <form (ngSubmit)="submitNewProposal()" #propForm="ngForm">
+          <div class="form-group">
+            <label for="annonceSelect">Campagne de Collecte visée * :</label>
+            <select id="annonceSelect" [(ngModel)]="newProp.annonceId" name="annonceId" required>
+              @for (a of annonces(); track a.id) {
+                @if (a.statut === 'OUVERTE') {
+                  <option [value]="a.id">
+                    {{ a.besoinInfo?.produitNom }} (Objectif : {{ a.quantiteObjectif | number }} Kg)
+                  </option>
+                }
+              }
+            </select>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="agriculteurNom">Nom de l'Agriculteur / Producteur * :</label>
+              <input type="text" id="agriculteurNom" [(ngModel)]="newProp.agriculteurNom" name="agriculteurNom" required />
+            </div>
+            <div class="form-group">
+              <label for="recolteId">Référence Récolte Producteur * :</label>
+              <input type="number" id="recolteId" [(ngModel)]="newProp.recolteId" name="recolteId" required />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="quantiteProposee">Quantité Proposée (Kg) * :</label>
+            <input type="number" id="quantiteProposee" [(ngModel)]="newProp.quantiteProposee" name="quantiteProposee" min="1" required />
+          </div>
+
+          <div class="form-group">
+            <label for="commentaire">Commentaire (variété, calibrage, date disponibilité) :</label>
+            <textarea id="commentaire" [(ngModel)]="newProp.commentaire" name="commentaire" rows="3"></textarea>
+          </div>
+
+          <div class="modal-actions">
+            <button type="button" class="btn-cancel" (click)="closeProposalModal()">Annuler</button>
+            <button type="submit" class="btn-submit" [disabled]="!propForm.form.valid">
+              <i class="fa fa-paper-plane"></i>
+              <span>Envoyer la Proposition</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- MODAL PESÉE & RÉCEPTION AU DÉPÔT -->
+@if (showReceptionModal()) {
+  <div class="modal-backdrop" (click)="closeReceptionModal()">
+    <div class="modal-dialog" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div class="mh-title title-weigh">
+          <i class="fa fa-balance-scale"></i>
+          <h3>Pont-Bascule : Enregistrer la Pesée Effective</h3>
+        </div>
+        <button class="modal-close-btn" (click)="closeReceptionModal()">×</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="weigh-info-box">
+          <p><strong>Producteur :</strong> {{ selectedPropForReception?.agriculteurNom }}</p>
+          <p><strong>Campagne :</strong> {{ selectedPropForReception?.annonceTitre }}</p>
+          <p><strong>Quantité Acceptée :</strong> {{ selectedPropForReception?.quantiteAcceptee | number }} Kg</p>
+        </div>
+
+        <div class="form-group">
+          <label for="receptionKg">Poids Réel Reçu et Pesé au Dépôt (Kg) * :</label>
+          <input 
+            type="number" 
+            id="receptionKg" 
+            [ngModel]="receptionQuantiteKg()" 
+            (ngModelChange)="receptionQuantiteKg.set($event)"
+            min="1" 
+            required 
+            class="input-weigh-bold"
+          />
+        </div>
+
+        <p class="weigh-note">
+          <i class="fa fa-info-circle"></i> 
+          Dès que la somme des pesées effectives couvre la quantité du besoin client, 
+          le système passera automatiquement le statut du besoin à <strong>SATISFAIT</strong>.
+        </p>
+
+        <div class="modal-actions">
+          <button type="button" class="btn-cancel" (click)="closeReceptionModal()">Annuler</button>
+          <button type="button" class="btn-submit btn-confirm-weigh" (click)="enregistrerPesee()">
+            <i class="fa fa-check-double"></i>
+            <span>Valider la Pesée au Dépôt</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+}

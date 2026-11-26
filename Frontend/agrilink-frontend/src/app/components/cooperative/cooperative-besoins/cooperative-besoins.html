@@ -1,0 +1,172 @@
+<app-cooperative-header pageTitle="BESOINS CLIENTS &amp; ACHATS GROUPÉS B2B" currentPage="Besoins Commerçants" />
+
+<main class="besoins-page-body">
+  <div class="container">
+
+    <!-- TOOLBAR -->
+    <div class="page-toolbar">
+      <div class="filters-pills">
+        <button class="pill-btn" [class.active]="filterStatut() === 'TOUS'" (click)="filterStatut.set('TOUS')">
+          Tous ({{ besoins().length }})
+        </button>
+        <button class="pill-btn" [class.active]="filterStatut() === 'SOUMIS'" (click)="filterStatut.set('SOUMIS')">
+          <span class="status-dot dot-gold"></span> À prendre en charge
+        </button>
+        <button class="pill-btn" [class.active]="filterStatut() === 'EN_COLLECTE'"
+          (click)="filterStatut.set('EN_COLLECTE')">
+          <span class="status-dot dot-blue"></span> En collecte
+        </button>
+        <button class="pill-btn" [class.active]="filterStatut() === 'SATISFAIT'"
+          (click)="filterStatut.set('SATISFAIT')">
+          <span class="status-dot dot-green"></span> Satisfaits
+        </button>
+      </div>
+
+      <button class="btn-create-demand" (click)="openCreateModal()">
+        <i class="fa fa-plus-circle"></i>
+        <span>Déposer un Besoin Client</span>
+      </button>
+    </div>
+
+    <!-- CARDS LIST -->
+    <div class="besoins-grid">
+      @for (b of filteredBesoins(); track b.id) {
+      <div class="besoin-card" [class.satisfied-border]="b.statut === 'SATISFAIT'">
+        <div class="bc-header">
+          <div class="bc-client-info">
+            <span class="bc-badge">Demande B2B — Réf. {{ b.id }}</span>
+            <h4 class="bc-client-name">{{ b.clientNom }}</h4>
+            <span class="bc-company">{{ b.clientEntreprise }}</span>
+          </div>
+          <span class="status-pill" [class]="'status-' + b.statut.toLowerCase()">
+            {{ b.statut }}
+          </span>
+        </div>
+
+        <div class="bc-body">
+          <div class="bc-product-banner">
+            <span class="bp-icon">🌾</span>
+            <div>
+              <h3 class="bp-name">{{ b.productNom }}</h3>
+              <span class="bp-ref">Réf. Produit {{ b.productId }}</span>
+            </div>
+          </div>
+
+          <div class="bc-specs">
+            <div class="spec-item">
+              <span class="s-label">Quantité Demandée</span>
+              <strong class="s-val">{{ b.quantiteDemandee | number }} <small>Kg</small></strong>
+            </div>
+            <div class="spec-item">
+              <span class="s-label">Date Souhaitée</span>
+              <strong class="s-val val-gold"><i class="fa fa-calendar-alt"></i> {{ b.dateSouhaitee }}</strong>
+            </div>
+          </div>
+
+          <p class="bc-desc">{{ b.description }}</p>
+
+          @if (b.statut === 'SATISFAIT') {
+          <div class="satisfaction-badge">
+            <i class="fa fa-check-circle"></i>
+            <span>Ce besoin a été entièrement couvert par les réceptions effectives au dépôt !</span>
+          </div>
+          }
+        </div>
+
+        <div class="bc-footer">
+          @if (b.statut === 'SOUMIS') {
+          <button class="btn-take-charge" (click)="lancerCollecte(b)">
+            <i class="fa fa-bullhorn"></i>
+            <span>Prendre en charge (Lancer Collecte)</span>
+          </button>
+          } @else if (b.statut === 'EN_COLLECTE') {
+          <a routerLink="/espace-cooperative/annonces" class="btn-view-collect">
+            <i class="fa fa-eye"></i>
+            <span>Suivre la Collecte Associée</span>
+          </a>
+          }
+
+          @if (b.statut !== 'ANNULE' && b.statut !== 'SATISFAIT') {
+          <button class="btn-cancel-besoin" (click)="annuler(b.id!)">
+            <i class="fa fa-times"></i>
+            <span>Annuler</span>
+          </button>
+          }
+        </div>
+      </div>
+      }
+    </div>
+
+  </div>
+</main>
+
+<!-- MODAL CRÉER BESOIN -->
+@if (showCreateModal()) {
+<div class="modal-backdrop" (click)="closeCreateModal()">
+  <div class="modal-dialog" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="mh-title">
+        <i class="fa fa-file-invoice"></i>
+        <h3>Enregistrer un Nouveau Besoin Client B2B</h3>
+      </div>
+      <button class="modal-close-btn" (click)="closeCreateModal()">×</button>
+    </div>
+
+      <div class="modal-body">
+        <form (ngSubmit)="submitNewBesoin()" #besoinForm="ngForm">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="clientId">Nom du client * :</label>
+              <input type="number" id="clientId" [(ngModel)]="newBesoin.clientId" name="clientId" required />
+            </div>
+            <div class="form-group">
+              <label for="clientNom">Nom de l'Entreprise / Commerçant * :</label>
+              <input type="text" id="clientNom" [(ngModel)]="newBesoin.clientNom" name="clientNom" required />
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="clientNom">Nom de l'Entreprise / Commerçant * :</label>
+            <input type="text" id="clientNom" [(ngModel)]="newBesoin.clientNom" name="clientNom" required />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="productId">Code Produit Catalogue * :</label>
+            <input type="number" id="productId" [(ngModel)]="newBesoin.productId" name="productId" required />
+          </div>
+          <div class="form-group">
+            <label for="productNom">Désignation du Produit * :</label>
+            <input type="text" id="productNom" [(ngModel)]="newBesoin.productNom" name="productNom" required />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="quantiteDemandee">Quantité Demandée (Kg) * :</label>
+            <input type="number" id="quantiteDemandee" [(ngModel)]="newBesoin.quantiteDemandee" name="quantiteDemandee"
+              min="1" required />
+          </div>
+          <div class="form-group">
+            <label for="dateSouhaitee">Date Souhaitée de Livraison * :</label>
+            <input type="date" id="dateSouhaitee" [(ngModel)]="newBesoin.dateSouhaitee" name="dateSouhaitee" required />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="desc">Commentaire ou exigences de qualité :</label>
+          <textarea id="desc" [(ngModel)]="newBesoin.description" name="description" rows="3"></textarea>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn-cancel" (click)="closeCreateModal()">Annuler</button>
+          <button type="submit" class="btn-submit" [disabled]="!besoinForm.form.valid">
+            <i class="fa fa-check"></i>
+            <span>Enregistrer le Besoin</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+}
