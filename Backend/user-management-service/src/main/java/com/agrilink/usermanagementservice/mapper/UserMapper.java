@@ -1,3 +1,4 @@
+
 package com.agrilink.usermanagementservice.mapper;
 
 import com.agrilink.usermanagementservice.dto.response.UserResponse;
@@ -29,6 +30,8 @@ public final class UserMapper {
                 u.getKeycloakId(),
                 u.getFirstName(),
                 u.getLastName(),
+                u.getPhone(),
+                u.getAddress(),
                 u.getUserRole(),
                 u.getStatus()
         );
