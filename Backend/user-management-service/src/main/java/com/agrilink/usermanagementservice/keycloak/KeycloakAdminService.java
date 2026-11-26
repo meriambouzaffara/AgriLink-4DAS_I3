@@ -235,4 +235,46 @@ public class KeycloakAdminService {
             );
         }
     }
+
+    /**
+     * Active ou desactive un compte utilisateur dans Keycloak
+     * en mettant a jour le champ "enabled".
+     *
+     * @param userId  Identifiant Keycloak de l'utilisateur.
+     * @param enabled true pour activer, false pour desactiver.
+     * @throws KeycloakException si l'utilisateur est introuvable dans Keycloak
+     *                           ou si Keycloak est inaccessible.
+     */
+    public void setUserEnabled(String userId, boolean enabled) {
+
+        String token = getAdminToken();
+
+        Map<String, Object> body = Map.of("enabled", enabled);
+
+        try {
+            restClient.put()
+                    .uri(
+                            "/admin/realms/{realm}/users/{userId}",
+                            properties.realm(),
+                            userId
+                    )
+                    .headers(headers -> headers.setBearerAuth(token))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(body)
+                    .retrieve()
+                    .toBodilessEntity();
+
+        } catch (HttpClientErrorException.NotFound e) {
+            throw new KeycloakException(
+                    "Utilisateur introuvable dans Keycloak (id=" + userId + ").",
+                    e
+            );
+
+        } catch (RestClientException e) {
+            throw new KeycloakException(
+                    "Impossible de mettre a jour le statut du compte Keycloak.",
+                    e
+            );
+        }
+    }
 }

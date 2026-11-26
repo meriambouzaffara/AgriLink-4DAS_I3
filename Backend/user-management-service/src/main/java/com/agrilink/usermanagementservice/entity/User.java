@@ -79,4 +79,12 @@ public class User {
         this.address = address;
     }
 
+    public void activate() {
+        this.status = UserStatus.ACTIVE;
+    }
+
+    public void deactivate() {
+        this.status = UserStatus.INACTIVE;
+    }
+
 }

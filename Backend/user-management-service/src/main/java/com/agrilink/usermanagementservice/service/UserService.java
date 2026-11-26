@@ -48,6 +48,11 @@ public interface UserService {
 
     UserStatisticsResponse statistics();
 
+    // Activation et desactivation de profil
+    UserResponse activateUser(Long id, String currentAdminKeycloakId);
+
+    UserResponse deactivateUser(Long id, String currentAdminKeycloakId);
+
     // Communication avec les autres microservices
     UserSummaryResponse getSummary(String keycloakId);
 }

@@ -14,6 +14,15 @@ import com.agrilink.usermanagementservice.enumeration.UserRole;
 import com.agrilink.usermanagementservice.security.CurrentUser;
 import com.agrilink.usermanagementservice.service.UserService;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 import jakarta.validation.Valid;
 
 import org.springframework.data.domain.PageRequest;
@@ -26,6 +35,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/users")
+@Tag(name = "User Management", description = "Gestion des profils utilisateurs AgriLink")
 public class UserController {
 
     private final UserService service;
@@ -152,5 +162,66 @@ public class UserController {
                 id,
                 currentUser.keycloakId()
         );
+    }
+
+    // Activer un utilisateur
+    @Operation(
+            summary = "Activer un profil utilisateur",
+            description = "Active le profil utilisateur dans H2 et le compte correspondant dans Keycloak. "
+                    + "Retourne une erreur 400 si le profil est deja actif. "
+                    + "Necessite le role ADMIN.",
+            security = @SecurityRequirement(name = "bearerAuth")
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Profil active avec succes"),
+            @ApiResponse(responseCode = "400", description = "Profil deja actif ou operation invalide",
+                    content = @Content(schema = @Schema(hidden = true))),
+            @ApiResponse(responseCode = "401", description = "Non authentifie",
+                    content = @Content(schema = @Schema(hidden = true))),
+            @ApiResponse(responseCode = "403", description = "Role ADMIN requis",
+                    content = @Content(schema = @Schema(hidden = true))),
+            @ApiResponse(responseCode = "404", description = "Utilisateur introuvable",
+                    content = @Content(schema = @Schema(hidden = true))),
+            @ApiResponse(responseCode = "502", description = "Echec de synchronisation avec Keycloak",
+                    content = @Content(schema = @Schema(hidden = true)))
+    })
+    @PatchMapping("/{id}/activate")
+    @PreAuthorize("hasRole('ADMIN')")
+    public UserResponse activateUser(
+            @Parameter(description = "Identifiant interne (H2) de l'utilisateur", required = true)
+            @PathVariable Long id
+    ) {
+        return service.activateUser(id, currentUser.keycloakId());
+    }
+
+    // Desactiver un utilisateur
+    @Operation(
+            summary = "Desactiver un profil utilisateur",
+            description = "Desactive le profil utilisateur dans H2 et le compte correspondant dans Keycloak. "
+                    + "Retourne une erreur 400 si le profil est deja inactif. "
+                    + "L'ADMIN ne peut pas desactiver son propre compte. "
+                    + "Necessite le role ADMIN.",
+            security = @SecurityRequirement(name = "bearerAuth")
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Profil desactive avec succes"),
+            @ApiResponse(responseCode = "400", description = "Profil deja inactif ou operation invalide",
+                    content = @Content(schema = @Schema(hidden = true))),
+            @ApiResponse(responseCode = "401", description = "Non authentifie",
+                    content = @Content(schema = @Schema(hidden = true))),
+            @ApiResponse(responseCode = "403", description = "Role ADMIN requis",
+                    content = @Content(schema = @Schema(hidden = true))),
+            @ApiResponse(responseCode = "404", description = "Utilisateur introuvable",
+                    content = @Content(schema = @Schema(hidden = true))),
+            @ApiResponse(responseCode = "502", description = "Echec de synchronisation avec Keycloak",
+                    content = @Content(schema = @Schema(hidden = true)))
+    })
+    @PatchMapping("/{id}/deactivate")
+    @PreAuthorize("hasRole('ADMIN')")
+    public UserResponse deactivateUser(
+            @Parameter(description = "Identifiant interne (H2) de l'utilisateur", required = true)
+            @PathVariable Long id
+    ) {
+        return service.deactivateUser(id, currentUser.keycloakId());
     }
 }

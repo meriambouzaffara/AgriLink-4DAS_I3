@@ -9,7 +9,8 @@ import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 @ConfigurationPropertiesScan
 public class UserManagementServiceApplication {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) {    
         SpringApplication.run(UserManagementServiceApplication.class, args);
     }
+
 }

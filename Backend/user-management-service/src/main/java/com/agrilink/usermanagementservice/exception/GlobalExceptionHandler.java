@@ -53,6 +53,18 @@ public class GlobalExceptionHandler {
                 "Requete invalide : JSON mal forme ou valeur inconnue (ex. role)", req);
     }
 
+    /**
+     * Echec de communication avec Keycloak : retourne 502 Bad Gateway.
+     * Le message interne n'est pas expose pour eviter de divulguer
+     * des details d'infrastructure sensibles.
+     */
+    @ExceptionHandler(KeycloakException.class)
+    ResponseEntity<ErrorResponse> keycloakError(KeycloakException ex, HttpServletRequest req) {
+        return build(HttpStatus.BAD_GATEWAY,
+                "Erreur de synchronisation avec le service d'authentification. "
+                        + "Veuillez reessayer ou contacter l'administrateur.", req);
+    }
+
     private ResponseEntity<ErrorResponse> build(HttpStatus status, String message, HttpServletRequest req) {
         return ResponseEntity.status(status).body(new ErrorResponse(
                 LocalDateTime.now(), status.value(), status.getReasonPhrase(),

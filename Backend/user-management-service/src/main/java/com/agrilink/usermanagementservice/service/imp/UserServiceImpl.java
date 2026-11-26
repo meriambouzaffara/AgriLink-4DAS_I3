@@ -11,6 +11,7 @@ import com.agrilink.usermanagementservice.dto.response.UserSummaryResponse;
 
 import com.agrilink.usermanagementservice.entity.User;
 import com.agrilink.usermanagementservice.enumeration.UserRole;
+import com.agrilink.usermanagementservice.enumeration.UserStatus;
 
 import com.agrilink.usermanagementservice.exception.ForbiddenRoleException;
 import com.agrilink.usermanagementservice.exception.ProfileAlreadyExistsException;
@@ -299,6 +300,126 @@ public class UserServiceImpl implements UserService {
         // 4. Supprimer le profil dans H2
         repository.delete(user);
         repository.flush();
+    }
+
+    // ==========================================
+    // ACTIVATION D'UN UTILISATEUR PAR ADMIN
+    // ==========================================
+
+    @Override
+    public UserResponse activateUser(Long id, String currentAdminKeycloakId) {
+
+        // 1. Verifier que l'utilisateur existe dans H2
+        User user = repository.findById(id)
+                .orElseThrow(() ->
+                        new UserNotFoundException(
+                                "Utilisateur introuvable : " + id
+                        )
+                );
+
+        // 2. Proteger l'ADMIN contre la modification de son propre statut
+        if (user.getKeycloakId().equals(currentAdminKeycloakId)) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Vous ne pouvez pas modifier le statut de votre propre compte"
+            );
+        }
+
+        // 3. Verifier que le statut actuel est INACTIVE
+        if (user.getStatus() == UserStatus.ACTIVE) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Le profil est deja actif"
+            );
+        }
+
+        // 4. Activer le compte dans Keycloak (en premier)
+        //    Si Keycloak echoue, H2 n'est pas modifie.
+        keycloakAdminService.setUserEnabled(user.getKeycloakId(), true);
+
+        // 5. Mettre a jour le statut dans H2 apres le succes Keycloak
+        try {
+            user.activate();
+            User saved = repository.saveAndFlush(user);
+            return UserMapper.toResponse(saved);
+
+        } catch (RuntimeException dbException) {
+            // Keycloak a ete active mais H2 a echoue : inconsistance detectee.
+            // On tente de retablir Keycloak a son etat precedent (compensation).
+            try {
+                keycloakAdminService.setUserEnabled(user.getKeycloakId(), false);
+            } catch (RuntimeException compensationException) {
+                dbException.addSuppressed(compensationException);
+            }
+            throw new ResponseStatusException(
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    "Le compte Keycloak a ete active mais la mise a jour "
+                            + "du profil local a echoue. "
+                            + "Une compensation a ete tentee. "
+                            + "Veuillez contacter l'administrateur.",
+                    dbException
+            );
+        }
+    }
+
+    // ==========================================
+    // DESACTIVATION D'UN UTILISATEUR PAR ADMIN
+    // ==========================================
+
+    @Override
+    public UserResponse deactivateUser(Long id, String currentAdminKeycloakId) {
+
+        // 1. Verifier que l'utilisateur existe dans H2
+        User user = repository.findById(id)
+                .orElseThrow(() ->
+                        new UserNotFoundException(
+                                "Utilisateur introuvable : " + id
+                        )
+                );
+
+        // 2. Proteger l'ADMIN contre la desactivation de son propre compte
+        if (user.getKeycloakId().equals(currentAdminKeycloakId)) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Vous ne pouvez pas desactiver votre propre compte"
+            );
+        }
+
+        // 3. Verifier que le statut actuel est ACTIVE
+        if (user.getStatus() == UserStatus.INACTIVE) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Le profil est deja inactif"
+            );
+        }
+
+        // 4. Desactiver le compte dans Keycloak (en premier)
+        //    Si Keycloak echoue, H2 n'est pas modifie.
+        keycloakAdminService.setUserEnabled(user.getKeycloakId(), false);
+
+        // 5. Mettre a jour le statut dans H2 apres le succes Keycloak
+        try {
+            user.deactivate();
+            User saved = repository.saveAndFlush(user);
+            return UserMapper.toResponse(saved);
+
+        } catch (RuntimeException dbException) {
+            // Keycloak a ete desactive mais H2 a echoue : inconsistance detectee.
+            // On tente de retablir Keycloak a son etat precedent (compensation).
+            try {
+                keycloakAdminService.setUserEnabled(user.getKeycloakId(), true);
+            } catch (RuntimeException compensationException) {
+                dbException.addSuppressed(compensationException);
+            }
+            throw new ResponseStatusException(
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    "Le compte Keycloak a ete desactive mais la mise a jour "
+                            + "du profil local a echoue. "
+                            + "Une compensation a ete tentee. "
+                            + "Veuillez contacter l'administrateur.",
+                    dbException
+            );
+        }
     }
 
     // ==========================================
