@@ -2,6 +2,7 @@ import { Component, HostListener, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs';
+import { CartService } from '../../services/cart.service';
 
 @Component({
   selector: 'app-navbar',
@@ -12,6 +13,7 @@ import { filter } from 'rxjs';
 })
 export class Navbar {
   private router = inject(Router);
+  readonly cart = inject(CartService);
 
   isScrolled = signal(false);
   mobileMenuOpen = signal(false);

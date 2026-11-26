@@ -1,0 +1,72 @@
+<main class="orders-page">
+  <div class="container">
+    <nav class="breadcrumb" aria-label="Fil d’Ariane"><a routerLink="/">Accueil</a> / Mes commandes</nav>
+    <header class="page-heading">
+      <div><span class="section-tag">Suivi de vos achats</span>
+        <h1>Mes commandes</h1>
+        <p>Retrouvez vos commandes et suivez leur état.</p></div>
+      @if (!loading() && !error()) { <span class="header-count"><i class="fa fa-box" aria-hidden="true"></i> {{ orders().length }} commande(s)</span> }
+    </header>
+    @if (!loading() && !error()) {
+      <div class="order-overview" aria-label="Résumé des commandes">
+        <div class="overview-tile"><span class="overview-icon"><i class="fa fa-shopping-bag" aria-hidden="true"></i></span><div><small>Toutes les commandes</small><strong>{{ orders().length }}</strong></div></div>
+        <div class="overview-tile"><span class="overview-icon"><i class="fa fa-clock-o" aria-hidden="true"></i></span><div><small>En attente</small><strong>{{ pendingCount() }}</strong></div></div>
+        <div class="overview-tile"><span class="overview-icon"><i class="fa fa-check-circle" aria-hidden="true"></i></span><div><small>Livrées</small><strong>{{ deliveredCount() }}</strong></div></div>
+      </div>
+    }
+    <p class="dev-note" role="note"><i class="fa fa-info-circle" aria-hidden="true"></i>
+      @if (customer.developmentMode) { Identité client simulée pour la démo : client {{ customer.customerId }}. }
+      @else { L’identité client de démonstration est désactivée. }
+    </p>
+
+    <div class="toolbar">
+      <div class="filter-tabs" role="group" aria-label="Filtrer par statut">
+        <button type="button" [class.active]="filter() === 'ALL'" [attr.aria-pressed]="filter() === 'ALL'" (click)="changeFilter('ALL')">Toutes</button>
+        @for (status of statuses; track status[0]) { <button type="button" [class.active]="filter() === status[0]" [attr.aria-pressed]="filter() === status[0]" (click)="changeFilter(status[0])">{{ status[1] }}</button> }
+      </div>
+      <button type="button" class="refresh" (click)="refresh()" [disabled]="loading()">
+        <i class="fa fa-refresh" aria-hidden="true"></i> Actualiser
+      </button>
+    </div>
+
+    @if (loading()) { <p class="state" role="status"><i class="fa fa-circle-notch fa-spin" aria-hidden="true"></i> Chargement de vos commandes…</p> }
+    @else if (error()) {
+      <div class="state error" role="alert">{{ error() }}
+        <button type="button" (click)="refresh()">Réessayer</button>
+      </div>
+    }
+    @else if (!orders().length) {
+      <div class="state empty"><i class="fa fa-box-open" aria-hidden="true"></i>
+        <h2>Aucune commande pour le moment</h2>
+        <p>Vos futures commandes apparaîtront ici.</p>
+        <a class="btn-primary" routerLink="/panier">Découvrir les produits</a>
+      </div>
+    }
+    @else if (!visibleOrders().length) {
+      <div class="state empty"><h2>Aucune commande avec ce statut</h2><p>Essayez un autre filtre.</p></div>
+    }
+    @else {
+      <div class="order-list">
+        @for (order of visibleOrders(); track order.id) {
+          <article class="order-card">
+            <div class="order-main">
+              <div class="order-icon"><i class="fa fa-shopping-basket" aria-hidden="true"></i></div>
+              <div class="order-description"><h2>Commande n° {{ order.id }}</h2>
+                <p>{{ date(order.dateCommande) }} · {{ order.lignes.length }} article(s)</p>
+                <div class="line-previews" aria-label="Références des produits commandés">
+                  @for (line of order.lignes.slice(0, 3); track line.id) {
+                    <span class="preview-thumb" [attr.data-product]="line.produitId" [title]="'Produit n° ' + line.produitId"><i class="fa fa-leaf" aria-hidden="true"></i></span>
+                  }
+                  @if (order.lignes.length > 3) { <span class="preview-more">+{{ order.lignes.length - 3 }}</span> }
+                </div></div>
+            </div>
+            <div class="order-meta"><span class="status" [attr.data-status]="order.statut">{{ statusLabels[order.statut] }}</span>
+              <div class="order-total"><small>Total officiel</small><strong>{{ money(order.montantTotal) }} TND</strong></div></div>
+            <a class="details-link" [routerLink]="['/commandes', order.id]">Voir les détails
+              <i class="fa fa-arrow-right" aria-hidden="true"></i></a>
+          </article>
+        }
+      </div>
+    }
+  </div>
+</main>

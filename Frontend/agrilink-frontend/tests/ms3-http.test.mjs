@@ -1,0 +1,10 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { developmentCustomerHeader, orderHttpErrorMessage } from '../src/app/services/ms3-http.ts';
+test('sends positive configured development customer ID',()=>assert.equal(developmentCustomerHeader(true,12),'12'));
+test('never sends development header when disabled',()=>assert.throws(()=>developmentCustomerHeader(false,12),/indisponible/));
+test('rejects invalid development identity',()=>{for(const id of [0,-1,NaN,1.5])assert.throws(()=>developmentCustomerHeader(true,id));});
+test('maps unavailable backend and validation errors',()=>{assert.match(orderHttpErrorMessage(0),/indisponible/);assert.match(orderHttpErrorMessage(400),/quantités/);});
+test('preserves structured stock conflict message',()=>assert.equal(orderHttpErrorMessage(409,'Stock insuffisant'),'Stock insuffisant'));
+test('translates known stock and missing product errors',()=>{assert.equal(orderHttpErrorMessage(409,'Insufficient stock for product 101'),'Stock insuffisant pour le produit 101.');assert.equal(orderHttpErrorMessage(404,'Product 999 not found'),'Produit 999 introuvable.');});
+test('does not expose internal error details',()=>assert.doesNotMatch(orderHttpErrorMessage(500,'SQL password'),/SQL password/));

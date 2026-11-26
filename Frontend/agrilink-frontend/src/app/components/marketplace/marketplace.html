@@ -31,16 +31,16 @@
       <button class="action-circle" title="Favoris">
         <i class="fa fa-heart"></i>
       </button>
-      <div class="cart-summary">
+      <a class="cart-summary" routerLink="/panier" aria-label="Ouvrir le panier de développement">
         <div class="action-circle cart-circle">
           <i class="fa fa-shopping-basket"></i>
-          <span class="cart-count">3</span>
+          <span class="cart-count">{{ cart.lineCount() }}</span>
         </div>
         <div class="cart-price-info">
-          <span class="cart-label">Votre Panier</span>
-          <span class="cart-amount">1,245.60 DT</span>
+          <span class="cart-label">Panier démo MS3</span>
+          <span class="cart-amount">{{ formatMillis(cart.estimatedTotalMillis()) }} TND estimés</span>
         </div>
-      </div>
+      </a>
     </div>
   </div>
 </div>

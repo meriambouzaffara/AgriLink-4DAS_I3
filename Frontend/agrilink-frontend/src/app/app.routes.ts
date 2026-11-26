@@ -1,4 +1,7 @@
 import { Routes } from '@angular/router';
+import { Cart } from './components/orders/cart/cart';
+import { OrderHistory } from './components/orders/order-history';
+import { OrderDetails } from './components/orders/order-details';
 import { Home } from './components/home/home';
 import { Marketplace } from './components/marketplace/marketplace';
 import { ProductDetails } from './components/product-details/product-details';
@@ -14,6 +17,9 @@ import { CooperativePropositions } from './components/cooperative/cooperative-pr
 export const routes: Routes = [
   { path: '', component: Home },
   { path: 'marketplace', component: Marketplace },
+  { path: 'panier', component: Cart },
+  { path: 'commandes', component: OrderHistory },
+  { path: 'commandes/:id', component: OrderDetails },
   { path: 'shop', redirectTo: 'marketplace', pathMatch: 'full' },
   { path: 'product/:id', component: ProductDetails },
   { path: 'product', redirectTo: 'marketplace', pathMatch: 'full' },

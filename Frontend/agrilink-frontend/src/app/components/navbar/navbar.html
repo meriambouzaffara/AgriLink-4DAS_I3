@@ -40,9 +40,12 @@
         <a routerLink="/marketplace" class="icon-btn search-btn" aria-label="Search" title="Rechercher">
           <i class="fa fa-search"></i>
         </a>
-        <a routerLink="/marketplace" class="icon-btn cart-btn" aria-label="Cart" title="Mon Panier">
+        <a routerLink="/panier" class="icon-btn cart-btn" aria-label="Cart" title="Mon Panier">
           <i class="fa fa-shopping-basket"></i>
-          <span class="badge">3</span>
+          <span class="badge">{{ cart.lineCount() }}</span>
+        </a>
+        <a routerLink="/commandes" class="icon-btn" aria-label="Mes commandes" title="Mes commandes">
+          <i class="fa fa-receipt" aria-hidden="true"></i>
         </a>
         <button class="icon-btn user-btn" aria-label="Profile">
           <i class="fa fa-bars"></i>

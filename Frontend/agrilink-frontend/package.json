@@ -6,7 +6,8 @@
     "start": "ng serve",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "test:ms3": "node --test tests/cart-state.test.mjs tests/ms3-http.test.mjs tests/order-view.test.mjs"
   },
   "private": true,
   "packageManager": "npm@11.19.1",

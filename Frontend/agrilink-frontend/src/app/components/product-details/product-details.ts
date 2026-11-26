@@ -76,8 +76,7 @@ export class ProductDetails implements OnInit {
     const offer = this.selectedOffer();
     const prod = this.product();
     if (offer && prod) {
-      const total = (offer.price * this.quantity()).toFixed(3);
-      this.showMessage(`✅ ${this.quantity()} x ${prod.name} ajouté(s) au panier chez ${offer.farmerName} (${total} DT)`);
+      this.showMessage('Cette offre marketplace ne peut pas encore être commandée via MS3. Le panier de développement est accessible depuis la navigation.');
     }
   }
 

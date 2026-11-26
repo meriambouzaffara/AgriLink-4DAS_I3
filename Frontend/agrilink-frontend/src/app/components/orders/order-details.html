@@ -1,0 +1,68 @@
+<main class="details-page"><div class="container">
+  <nav class="breadcrumb" aria-label="Fil d’Ariane"><a routerLink="/">Accueil</a> / <a routerLink="/commandes">Mes commandes</a> / Détails</nav>
+  <a class="back-link" routerLink="/commandes"><i class="fa fa-arrow-left" aria-hidden="true"></i> Mes commandes</a>
+  @if (loading()) { <div class="state" role="status"><i class="fa fa-circle-notch fa-spin" aria-hidden="true"></i> Chargement de la commande…</div> }
+  @else if (error() && !order()) {
+    <div class="state error" role="alert"><h1>Commande indisponible</h1><p>{{ error() }}</p>
+      <a class="btn-primary" routerLink="/commandes">Retour aux commandes</a></div>
+  }
+  @else if (order(); as current) {
+    <header class="page-heading">
+      <div><span class="section-tag">Détails de votre achat</span><h1>Commande n° {{ current.id }}</h1>
+        <p>Passée le {{ date(current.dateCommande) }}</p><span class="header-status status" [attr.data-status]="current.statut">{{ labels[current.statut] }}</span></div>
+      <button class="refresh" type="button" (click)="refresh()" [disabled]="loading() || pending()">
+        <i class="fa fa-refresh" aria-hidden="true"></i> Actualiser</button>
+    </header>
+    <p class="dev-note" role="note"><i class="fa fa-info-circle" aria-hidden="true"></i>
+      Identité client simulée pour la démo : client {{ customer.customerId }}. Les étapes de livraison sont affichées depuis MS3.
+    </p>
+    @if (error()) { <div class="feedback error" role="alert">{{ error() }}</div> }
+    @if (actionError()) { <div class="feedback error" role="alert">{{ actionError() }}</div> }
+
+    <section class="tracking card" aria-labelledby="tracking-title">
+      <div class="section-heading"><h2 id="tracking-title">Suivi de la commande</h2>
+        @if (current.statut !== 'CANCELLED') { <span class="stage-count">Étape {{ stageIndex(current) + 1 }} sur {{ stages.length }}</span> }
+      </div>
+      @if (current.statut === 'CANCELLED') {
+        <div class="cancelled-state"><i class="fa fa-times-circle" aria-hidden="true"></i>
+          <div><strong>Commande annulée</strong><p>Aucune étape de livraison n’est en cours.</p></div></div>
+      } @else {
+        <ol class="timeline" aria-label="Étapes de la commande">
+          @for (stage of stages; track stage; let index = $index) {
+            <li [class.completed]="index < stageIndex(current)" [class.current]="index === stageIndex(current)"
+                [attr.aria-current]="index === stageIndex(current) ? 'step' : null">
+              <span class="step-dot"><i class="fa fa-check" aria-hidden="true"></i></span>
+              <span>{{ labels[stage] }}</span>
+            </li>
+          }
+        </ol>
+        <p class="tracking-note">Le suivi affiche uniquement le statut actuel ; les mises à jour de livraison relèvent du service de livraison.</p>
+      }
+    </section>
+
+    <div class="details-grid">
+      <section class="lines card" aria-labelledby="lines-title"><div class="section-heading"><h2 id="lines-title">Produits commandés</h2>
+        <span>{{ current.lignes.length }} article(s)</span></div>
+        @for (line of current.lignes; track line.id) {
+          <div class="order-line">
+            <div class="product-icon" [attr.data-product]="line.produitId"><i class="fa fa-leaf" aria-hidden="true"></i></div>
+            <div class="line-name"><h3>{{ productName(line.produitId) }}</h3><p>Réf. {{ line.produitId }} · {{ money(line.prixUnitaire) }} TND / kg</p></div>
+            <span class="quantity">{{ line.quantite }} kg</span>
+            <strong>{{ money(line.sousTotal) }} TND</strong>
+          </div>
+        }
+      </section>
+      <aside class="summary card"><div class="summary-heading"><span class="summary-emblem"><i class="fa fa-file-text-o" aria-hidden="true"></i></span><div><small>Récapitulatif</small><h2>Votre commande</h2></div></div>
+        <div class="total"><span>Total officiel</span><strong>{{ money(current.montantTotal) }} TND</strong></div>
+        <p>Prix enregistrés lors de la création de la commande.</p>
+        @if (canConfirm(current.statut)) {
+          <button class="btn-primary action" type="button" (click)="confirm()" [disabled]="pending()">
+            @if (pending()) { Traitement en cours… } @else { Confirmer la commande }</button>
+        }
+        @if (canCancel(current.statut)) {
+          <button class="cancel-action" type="button" (click)="cancel()" [disabled]="pending()">Annuler la commande</button>
+        }
+      </aside>
+    </div>
+  }
+</div></main>

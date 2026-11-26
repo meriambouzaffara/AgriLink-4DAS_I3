@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ProductService } from '../../services/product.service';
+import { CartService } from '../../services/cart.service';
+import { formatMillis } from '../../services/cart-state';
 import { Product } from '../../models/product.model';
 
 @Component({
@@ -14,6 +16,8 @@ import { Product } from '../../models/product.model';
 })
 export class Marketplace {
   private productService = inject(ProductService);
+  readonly cart = inject(CartService);
+  readonly formatMillis = formatMillis;
 
   // Filters & State
   selectedCategory = signal<string>('Fruits');
