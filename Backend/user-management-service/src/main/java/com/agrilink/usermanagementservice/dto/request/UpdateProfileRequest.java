@@ -1,13 +1,16 @@
 
 package com.agrilink.usermanagementservice.dto.request;
 
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
 public record UpdateProfileRequest(
 
+        @NotBlank(message = "First name is required")
         @Size(max = 100)
         String firstName,
-
+        @NotBlank(message = "lastNa" +
+                " name is required")
         @Size(max = 100)
         String lastName,
 
